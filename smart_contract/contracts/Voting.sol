@@ -35,7 +35,7 @@ contract Voting is Ownable {
     event ProposalRegistered(uint proposalId);
     event Voted(address voter, uint proposalId);
 
-    mapping(address => Voter) whitelist;
+    mapping(address => Voter) voters;
     Proposal[] public proposals;
     WorkflowStatus public workflowStatus = WorkflowStatus.RegisteringVoters;
     uint private winningProposalId;
@@ -44,7 +44,7 @@ contract Voting is Ownable {
 
     modifier onlyRegistered() {
         require(
-            whitelist[msg.sender].isRegistered,
+            voters[msg.sender].isRegistered,
             "You are not registered to vote"
         );
         _;
@@ -58,7 +58,7 @@ contract Voting is Ownable {
     /** ADMINISTRATOR ACTIONS */
 
     function registerVoter(address _voterAddress) public onlyOwner {
-        whitelist[_voterAddress] = Voter(true, false, 0);
+        voters[_voterAddress] = Voter(true, false, 0);
         emit VoterRegistered(_voterAddress);
     }
 
@@ -116,10 +116,10 @@ contract Voting is Ownable {
         onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
         require(_proposalId < proposals.length, "Proposal id does not exist");
-        require(!whitelist[msg.sender].hasVoted, "You have already voted");
+        require(!voters[msg.sender].hasVoted, "You have already voted");
 
-        whitelist[msg.sender].hasVoted = true;
-        whitelist[msg.sender].votedProposalId = _proposalId;
+        voters[msg.sender].hasVoted = true;
+        voters[msg.sender].votedProposalId = _proposalId;
         proposals[_proposalId].voteCount++;
         updateWinningProposalId(_proposalId);
 
