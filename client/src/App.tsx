@@ -13,9 +13,7 @@ import Header from "./components/Header";
 function App() {
   const [provider, setProvider] = useState<BrowserProvider | undefined>();
   const [signer, setSigner] = useState<Signer | undefined>();
-  const [votingContract, setVotingContract] = useState<
-    BaseContract | undefined
-  >(undefined);
+  const [, setVotingContract] = useState<BaseContract | undefined>(undefined);
 
   const updateSigner = useCallback(async () => {
     provider
