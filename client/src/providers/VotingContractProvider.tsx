@@ -11,7 +11,9 @@ export default function VotingContractProvider({
 }) {
   const { signer } = useContext(Web3Context);
 
-  const [contractAddress, setContractAddress] = useState<string | undefined>();
+  const [contractAddress, setContractAddress] = useState<string | undefined>(
+    localStorage.getItem("latestContractAddress") ?? ""
+  );
   const { isOwner, contract } = useVotingContract(contractAddress, signer);
 
   const deployNewVotingContract = useCallback(async () => {

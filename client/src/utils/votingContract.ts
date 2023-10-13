@@ -1,21 +1,23 @@
-import { Signer } from "ethers";
+import { Contract, Signer } from "ethers";
+import { ContractFactory } from "ethers/contract";
 
 import votingArtifact from "../../../smart_contract/artifacts/contracts/Voting.sol/Voting.json";
-
-import { Voting__factory } from "../typechain";
+import { Voting } from "../../../smart_contract/typechain-types";
 
 export async function deployVotingContract(signer: Signer) {
-  const votingContractFactory = await new Voting__factory(
+  const votingContractFactory = new ContractFactory(
     votingArtifact.abi,
     votingArtifact.bytecode,
     signer
   );
 
-  const voting = await votingContractFactory.deploy();
+  const voting = (await votingContractFactory.deploy()) as Voting;
 
   return await voting.waitForDeployment();
 }
 
 export function getVotingContract(address: string, signer: Signer) {
-  return Voting__factory.connect(address, signer);
+  return new Contract(address, votingArtifact.abi, signer).connect(
+    signer
+  ) as Voting;
 }
