@@ -63,7 +63,10 @@ function App() {
     };
 
     const removeEventListener = async () => {
-      await contract?.off(contract.getEvent("WorkflowStatusChange"));
+      await contract?.off(
+        contract.getEvent("WorkflowStatusChange"),
+        handleEvent
+      );
     };
 
     addEventListener();

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Voting } from "./../typechain";
+import { Voting } from "../../../smart_contract/typechain-types";
 
 import { handleContractOperationError } from "../utils/contractErrors";
 import { getVotingContract } from "../utils/votingContract";
@@ -15,6 +15,7 @@ export default function useVotingContract(
   const testIsOwner = useCallback(async () => {
     try {
       const owner = await contract?.owner();
+
       const signerAddress = await signer?.getAddress();
       setIsOwner(owner === signerAddress ? "yes" : "no");
     } catch (error) {
