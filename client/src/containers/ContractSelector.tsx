@@ -1,31 +1,23 @@
-import { ChangeEvent, useContext, useEffect } from "react";
+import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { MdSend } from "react-icons/md";
 import Input from "../components/Input";
 import OwnerBadge from "../components/OwnerBadge";
-import useVotingContract from "../hooks/useContract";
-import useUncontrolledInput from "../hooks/useUncontrolledInput";
-import { deployVotingContract } from "../utils/votingContract";
-import Web3Context from "../contexts/Web3Context";
+import VotingContractContext from "../contexts/VotingContractContext";
 
 export default function ContractSelector() {
-  const { signer } = useContext(Web3Context);
-
   const {
-    draftValue: contractAddressInputValue,
-    setDraftValue: setContractAddressInputValue,
-    validatedValue: contractAddress,
-    setValidatedValue: setContractAddress,
-  } = useUncontrolledInput(localStorage.getItem("contractAddress") ?? "");
+    setContractAddress,
+    isOwner,
+    deployNewVotingContract,
+    contractAddress,
+  } = useContext(VotingContractContext);
 
-  const { isOwner } = useVotingContract(contractAddress, signer);
+  const [contractAddressInputValue, setContractAddressInputValue] =
+    useState("");
 
-  const handleDeployNewVotingContract = async () => {
-    if (signer) {
-      const contract = await deployVotingContract(signer);
-      const contractAddress = await contract.getAddress();
-      setContractAddress(contractAddress);
-    }
-  };
+  useEffect(() => {
+    setContractAddressInputValue(contractAddress ?? "");
+  }, [contractAddress]);
 
   const handleContractAddressInputChange = (
     e: ChangeEvent<HTMLInputElement>
@@ -36,10 +28,6 @@ export default function ContractSelector() {
   const handleValidateContractAddress = () => {
     setContractAddress(contractAddressInputValue);
   };
-
-  useEffect(() => {
-    localStorage.setItem("contractAddress", contractAddress);
-  }, [contractAddress]);
 
   return (
     <div className="flex flex-col items-center space-y-2">
@@ -62,7 +50,7 @@ export default function ContractSelector() {
       <p className="font-semibold text-lg">OR</p>
       <button
         className="bg-blue-500 px-4 py-2 rounded text-white font-semibold"
-        onClick={handleDeployNewVotingContract}
+        onClick={deployNewVotingContract}
       >
         Deploy new voting contract
       </button>
