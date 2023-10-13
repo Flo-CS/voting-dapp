@@ -17,5 +17,7 @@ export async function deployVotingContract(signer: Signer) {
 }
 
 export function getVotingContract(address: string, signer: Signer) {
-  return new Contract(address, votingArtifact.abi, signer) as Voting;
+  return new Contract(address, votingArtifact.abi, signer).connect(
+    signer
+  ) as Voting;
 }

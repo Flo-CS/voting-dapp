@@ -30,9 +30,9 @@ export default function ContractSelector() {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-2 w-full">
-      <div className="flex justify-center w-full">
-        <div className="mr-3 w-6/12">
+    <div className="flex flex-col items-center space-y-4 ">
+      <div className="flex justify-center ">
+        <div className="mr-3 w-[28rem]">
           <Input
             placeholder="Enter deployed contract address"
             value={contractAddressInputValue}
