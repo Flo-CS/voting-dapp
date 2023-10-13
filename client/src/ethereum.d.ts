@@ -1,9 +1,10 @@
-import { Eip1193Provider } from "ethers";
-
-import "../../smart_contract/typechain-types/index";
+import { BrowserProvider, Eip1193Provider } from "ethers";
 
 declare global {
   interface Window {
-    ethereum: Eip1193Provider;
+    ethereum: BrowserProvider &
+      Eip1193Provider & {
+        isMetaMask: boolean;
+      };
   }
 }

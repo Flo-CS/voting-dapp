@@ -62,27 +62,22 @@ contract Voting is Ownable {
         emit VoterRegistered(_voterAddress);
     }
 
-    function startProposalsRegistration() public onlyOwner {
-        changeWorkflowStatus(WorkflowStatus.ProposalsRegistrationStarted);
+    function goNextWorkflowStatus() public onlyOwner {
+        require(
+            workflowStatus != WorkflowStatus.VotesTallied,
+            "Voting session is over"
+        );
+        WorkflowStatus _newStatus = WorkflowStatus(uint(workflowStatus) + 1);
+        changeWorkflowStatus(_newStatus);
+        emit WorkflowStatusChange(workflowStatus, _newStatus);
     }
 
-    function endProposalsRegistration() public onlyOwner {
-        changeWorkflowStatus(WorkflowStatus.ProposalsRegistrationEnded);
-    }
-
-    function startVotingSession() public onlyOwner {
-        changeWorkflowStatus(WorkflowStatus.VotingSessionStarted);
-    }
-
-    function changeWorkflowStatus(WorkflowStatus _newStatus) private {
+    function changeWorkflowStatus(WorkflowStatus _newStatus) private onlyOwner {
         require(
             _newStatus > workflowStatus,
             "New status must be after the current status"
         );
-        WorkflowStatus _previousStatus = workflowStatus;
         workflowStatus = _newStatus;
-
-        emit WorkflowStatusChange(_previousStatus, _newStatus);
     }
 
     /** VOTERS ACTIONS */
