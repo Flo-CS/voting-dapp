@@ -5,35 +5,42 @@ type StepperProps = {
 };
 
 function Stepper({ children }: StepperProps) {
-  return <ul className="flex items-center space-x-2">{children}</ul>;
+  return <ul className="flex flex-col">{children}</ul>;
 }
 
 type ItemProps = {
   completed: boolean;
   children: React.ReactNode;
+  index: number;
   isLast?: boolean;
 };
 
-function Item({ completed, children, isLast }: ItemProps) {
+function Item({ completed, children, index, isLast }: ItemProps) {
   return (
     <li
-      className={classNames(
-        "w-48 flex items-center after:content-[''] after:w-full after:h-1 after:border-b after:border-gray-200 after:border-1 after:inline-block after:mx-2",
-        {
-          "after:w-0 after:hidden": isLast,
-          "text-blue-500": completed,
-          "text-black": !completed,
-        }
-      )}
+      className={classNames("", {
+        "text-blue-500": completed,
+        "text-black": !completed,
+      })}
     >
-      <div className="flex flex-col items-center">
-        <div
-          className={classNames("h-5 w-5 rounded-full", {
-            "bg-blue-500": completed,
-            "bg-black": !completed,
-          })}
-        />
-        <span className="text text-center mt-3">{children}</span>
+      <div className="flex ">
+        <div className="flex flex-col items-center">
+          <div
+            className={classNames(
+              "h-7 w-7 rounded-full text-white flex items-center justify-center font-semibold",
+              {
+                "bg-blue-500": completed,
+                "bg-black": !completed,
+              }
+            )}
+          >
+            {index}
+          </div>
+          {!isLast && (
+            <span className="inline-block h-5 w-0.5 bg-slate-200"></span>
+          )}
+        </div>
+        <span className="text ml-3 mt-0.5">{children}</span>
       </div>
     </li>
   );

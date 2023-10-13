@@ -30,7 +30,7 @@ export default function ContractSelector() {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-2">
+    <div className="flex flex-col items-center space-y-2 w-full">
       <div className="flex justify-center w-full">
         <div className="mr-3 w-6/12">
           <Input

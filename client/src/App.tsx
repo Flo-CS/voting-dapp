@@ -99,14 +99,20 @@ function App() {
         )}
       </Header>
       <div className="p-8">
-        <ContractSelector />
-        <div className="mt-16 flex justify-center items-center space-x-8">
+        <div className="flex flex-col items-center space-y-8">
+          <h2 className="text-3xl font-semibold">Contract selection</h2>
+          <ContractSelector />
+        </div>
+        <div className="mt-16 flex flex-col justify-center items-center space-y-8">
+          <hr className="w-full" />
+          <h2 className="text-3xl font-semibold">Voting</h2>
           <Stepper>
             {votingSteps.map((step, idx) => {
               return (
                 <Stepper.Item
                   key={step}
                   completed={idx <= activeStep}
+                  index={idx}
                   isLast={idx === votingSteps.length - 1}
                 >
                   {step}
@@ -117,7 +123,7 @@ function App() {
           {showNextStepButton && (
             <button
               className={classnames(
-                "bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center space-x-2"
+                "bg-blue-500 text-white py-2 px-4 rounded font-semibold hover:bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center space-x-2"
               )}
               disabled={isLoadingWorkflowStatus}
               onClick={handleNextWorkflowStatusButtonClick}
