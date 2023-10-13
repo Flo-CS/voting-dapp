@@ -50,7 +50,7 @@ function App() {
   }, [contract]);
 
   useEffect(() => {
-    const handleEvent = async (_: bigint, newStatus: bigint) => {
+    const handleEvent = (_: bigint, newStatus: bigint) => {
       setActiveStep(Number(newStatus));
       setIsLoadingWorkflowStatus(false);
     };
