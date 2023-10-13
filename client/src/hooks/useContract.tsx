@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Voting } from "../../../smart_contract/typechain-types";
+import { Voting } from "./../typechain";
+
 import { handleContractOperationError } from "../utils/contractErrors";
 import { getVotingContract } from "../utils/votingContract";
 import { Signer } from "ethers";

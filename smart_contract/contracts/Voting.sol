@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.21;
 
-// Don't know why, but solidity can't resolve the import without node_modules
-import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Voting is Ownable {
     constructor() Ownable(msg.sender) {}
@@ -69,7 +68,6 @@ contract Voting is Ownable {
         );
         WorkflowStatus _newStatus = WorkflowStatus(uint(workflowStatus) + 1);
         changeWorkflowStatus(_newStatus);
-        emit WorkflowStatusChange(workflowStatus, _newStatus);
     }
 
     function changeWorkflowStatus(WorkflowStatus _newStatus) private onlyOwner {
@@ -77,7 +75,9 @@ contract Voting is Ownable {
             _newStatus > workflowStatus,
             "New status must be after the current status"
         );
+        WorkflowStatus _previousStatus = workflowStatus;
         workflowStatus = _newStatus;
+        emit WorkflowStatusChange(_previousStatus, _newStatus);
     }
 
     /** VOTERS ACTIONS */

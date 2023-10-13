@@ -2,10 +2,10 @@ import { Signer } from "ethers";
 
 import votingArtifact from "../../../smart_contract/artifacts/contracts/Voting.sol/Voting.json";
 
-import { Voting__factory } from "../../../smart_contract/typechain-types";
+import { Voting__factory } from "../typechain";
 
 export async function deployVotingContract(signer: Signer) {
-  const votingContractFactory = new Voting__factory(
+  const votingContractFactory = await new Voting__factory(
     votingArtifact.abi,
     votingArtifact.bytecode,
     signer

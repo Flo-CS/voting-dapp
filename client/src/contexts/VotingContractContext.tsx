@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { Voting } from "../../../smart_contract/typechain-types";
+import { Voting } from "./../typechain";
 
 const VotingContractContext = createContext<{
   contractAddress?: string;
