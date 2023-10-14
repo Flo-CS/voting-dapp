@@ -35,9 +35,9 @@ contract Voting is Ownable {
     event Voted(address voter, uint proposalId);
 
     mapping(address => Voter) voters;
-    Proposal[] public proposals;
-    WorkflowStatus public workflowStatus = WorkflowStatus.RegisteringVoters;
-    uint private winningProposalId;
+    Proposal[] proposals;
+    WorkflowStatus public currentStatus = WorkflowStatus.RegisteringVoters;
+    uint winningProposalId;
 
     /** MODIFIERS */
 
@@ -50,34 +50,35 @@ contract Voting is Ownable {
     }
 
     modifier onlyDuringWorkflowStatus(WorkflowStatus _status) {
-        require(workflowStatus == _status, "You can't do this right now");
+        require(currentStatus == _status, "Can't do this right now");
         _;
     }
 
-    /** ADMINISTRATOR ACTIONS */
+    modifier notDuringWorkflowStatus(WorkflowStatus _status) {
+        require(currentStatus != _status, "Can't do this right now");
+        _;
+    }
+
+    /** OWNER ACTIONS */
 
     function registerVoter(address _voterAddress) public onlyOwner {
         voters[_voterAddress] = Voter(true, false, 0);
         emit VoterRegistered(_voterAddress);
     }
 
-    function goNextWorkflowStatus() public onlyOwner {
-        require(
-            workflowStatus != WorkflowStatus.VotesTallied,
-            "Voting session is over"
-        );
-        WorkflowStatus _newStatus = WorkflowStatus(uint(workflowStatus) + 1);
-        changeWorkflowStatus(_newStatus);
-    }
+    function goNextWorkflowStatus()
+        public
+        onlyOwner
+        notDuringWorkflowStatus(WorkflowStatus.VotesTallied)
+        returns (WorkflowStatus)
+    {
+        WorkflowStatus _newStatus = WorkflowStatus(uint(currentStatus) + 1);
 
-    function changeWorkflowStatus(WorkflowStatus _newStatus) private onlyOwner {
-        require(
-            _newStatus > workflowStatus,
-            "New status must be after the current status"
-        );
-        WorkflowStatus _previousStatus = workflowStatus;
-        workflowStatus = _newStatus;
+        WorkflowStatus _previousStatus = currentStatus;
+        currentStatus = _newStatus;
         emit WorkflowStatusChange(_previousStatus, _newStatus);
+
+        return _newStatus;
     }
 
     /** VOTERS ACTIONS */
@@ -116,6 +117,7 @@ contract Voting is Ownable {
         voters[msg.sender].hasVoted = true;
         voters[msg.sender].votedProposalId = _proposalId;
         proposals[_proposalId].voteCount++;
+
         updateWinningProposalId(_proposalId);
 
         emit Voted(msg.sender, _proposalId);
@@ -123,7 +125,13 @@ contract Voting is Ownable {
 
     /** UTILS */
 
-    function updateWinningProposalId(uint _newVotedProposalId) private {
+    function updateWinningProposalId(
+        uint _newVotedProposalId
+    )
+        private
+        onlyRegistered
+        onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
+    {
         uint winningProposalVoteCount = proposals[winningProposalId].voteCount;
         if (
             proposals[_newVotedProposalId].voteCount > winningProposalVoteCount

@@ -1,11 +1,14 @@
 import classnames from "classnames";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import ButtonSpinner from "../components/ButtonSpinner";
 import Stepper from "../components/Stepper";
 import VotingContractContext from "../contexts/VotingContractContext";
 import { handleContractOperationError } from "../utils/contractErrors";
 import ContractSelector from "./ContractSelector";
+import { EventLog } from "ethers";
+import useContractFunctionCall from "../hooks/useContractFunctionCall";
+import { getEventsArgs } from "../utils/contracts";
 
 const votingSteps = [
   "Register voters",
@@ -18,63 +21,62 @@ const votingSteps = [
 
 export default function VotingInfos() {
   const navigate = useNavigate();
+
   const [activeStep, setActiveStep] = useState(0);
+  const [isLoadingWorkflowStatus, setIsLoadingWorkflowStatus] = useState(false);
 
   const { contract, isOwner } = useContext(VotingContractContext);
-  const [isLoadingWorkflowStatus, setIsLoadingWorkflowStatus] = useState(true);
 
-  const handleNextWorkflowStatusButtonClick = async () => {
+  const fetchWorkflowStatus = useCallback(async () => {
+    setIsLoadingWorkflowStatus(true);
+    try {
+      const status = await contract?.currentStatus();
+      setActiveStep(Number(status));
+    } catch (error) {
+      handleContractOperationError(error);
+    }
+    setIsLoadingWorkflowStatus(false);
+  }, [contract]);
+
+  const sendGoNextWorkflowStatus = useCallback(async () => {
     setIsLoadingWorkflowStatus(true);
     try {
       const transaction = await contract?.goNextWorkflowStatus();
-      await transaction?.wait();
-    } catch (err) {
-      handleContractOperationError(err);
-      setIsLoadingWorkflowStatus(false);
+      const receipt = await transaction?.wait();
+      const newStatus = Number(getEventsArgs(receipt)?.[1]);
+      // OR: Listen to the event WorkflowStatusChange (but it works completely randomly)
+      // OR: Fetch again the status
+      setActiveStep(newStatus);
+    } catch (error) {
+      handleContractOperationError(error);
     }
-  };
+    setIsLoadingWorkflowStatus(false);
+  }, [contract]);
 
-  useEffect(() => {
-    const getWorkflowStatus = async () => {
-      if (!contract) return;
-
-      const status = await contract.workflowStatus();
-
-      setIsLoadingWorkflowStatus(false);
+  /*useEffect(() => {
+    const handleEvent = (_: bigint, status: bigint) => {
+      console.log("WorkflowStatusChange", status.toString());
       setActiveStep(Number(status));
-
       navigate(`/voting-dapp/${status}`);
     };
-    getWorkflowStatus();
-  }, [contract, navigate]);
+
+    contract?.addListener("WorkflowStatusChange", handleEvent);
+    console.log("addListener");
+
+    return () => {
+      console.log("removeListener");
+      //contract?.removeListener("WorkflowStatusChange", handleEvent);
+    };
+  }, [contract, navigate]); */
 
   useEffect(() => {
-    const handleEvent = (_: bigint, newStatus: bigint) => {
-      setIsLoadingWorkflowStatus(false);
-      setActiveStep(Number(newStatus));
+    if (!activeStep) return;
+    navigate(`/voting-dapp/${activeStep}`);
+  }, [activeStep, navigate]);
 
-      navigate(`/voting-dapp/${newStatus}`);
-    };
-
-    const addEventListener = async () => {
-      await contract?.on(
-        contract.getEvent("WorkflowStatusChange"),
-        handleEvent
-      );
-    };
-
-    const removeEventListener = async () => {
-      await contract?.off(
-        contract.getEvent("WorkflowStatusChange"),
-        handleEvent
-      );
-    };
-
-    addEventListener();
-    return () => {
-      removeEventListener();
-    };
-  }, [contract, navigate]);
+  useEffect(() => {
+    fetchWorkflowStatus();
+  }, [fetchWorkflowStatus]);
 
   const showNextStepButton =
     isOwner === "yes" && activeStep < votingSteps.length - 1;
@@ -106,7 +108,7 @@ export default function VotingInfos() {
               "bg-blue-500 text-white py-2 px-4 rounded font-semibold hover:bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center space-x-2"
             )}
             disabled={isLoadingWorkflowStatus}
-            onClick={handleNextWorkflowStatusButtonClick}
+            onClick={sendGoNextWorkflowStatus}
           >
             {isLoadingWorkflowStatus && <ButtonSpinner />}
             Next step
