@@ -1,4 +1,5 @@
 import classNames from "classnames";
+import { MdStar } from "react-icons/md";
 
 type ProposalProps = {
   description: string;
@@ -7,6 +8,7 @@ type ProposalProps = {
   showVotesCount?: boolean;
   onClick?: (id: number) => void;
   isVoted?: boolean;
+  isWinning?: boolean;
 };
 
 export default function Proposal({
@@ -16,6 +18,7 @@ export default function Proposal({
   showVotesCount = true,
   onClick,
   isVoted,
+  isWinning,
 }: ProposalProps) {
   function handleProposalClick() {
     if (onClick) onClick(id);
@@ -35,9 +38,16 @@ export default function Proposal({
         </h4>
       </div>
       {showVotesCount && (
-        <div className="absolute top-0 right-0 flex items-center justify-center px-3 py-1 text-lg font-bold text-white bg-blue-500 border-2 border-white border-solid rounded-full translate-x-1/4 -translate-y-1/4">
-          {votesCount}
-        </div>
+        <>
+          <div className="absolute top-0 right-0 flex items-center justify-center px-3 py-1 text-lg font-bold text-white bg-blue-500 border-2 border-white border-solid rounded-full translate-x-2/4 -translate-y-2/4">
+            {votesCount}{" "}
+            {isWinning && (
+              <span className="ml-2 ">
+                <MdStar className="w-6 h-6 text-yellow-400" />
+              </span>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

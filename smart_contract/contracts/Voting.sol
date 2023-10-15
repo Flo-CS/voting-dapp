@@ -14,7 +14,7 @@ contract Voting is Ownable {
 
     struct Proposal {
         string description;
-        uint voteCount;
+        uint votesCount;
     }
 
     enum WorkflowStatus {
@@ -61,7 +61,13 @@ contract Voting is Ownable {
 
     /** OWNER ACTIONS */
 
-    function registerVoter(address _voterAddress) public onlyOwner {
+    function registerVoter(
+        address _voterAddress
+    )
+        public
+        onlyOwner
+        onlyDuringWorkflowStatus(WorkflowStatus.RegisteringVoters)
+    {
         voters[_voterAddress] = Voter(true, false, 0);
 
         emit VoterRegistered(_voterAddress);
@@ -95,27 +101,6 @@ contract Voting is Ownable {
     }
 
     /** VOTERS ACTIONS */
-    function getProposals() public view returns (Proposal[] memory) {
-        return proposals;
-    }
-
-    function getWinningProposal()
-        public
-        view
-        onlyDuringWorkflowStatus(WorkflowStatus.VotesTallied)
-        returns (Proposal memory)
-    {
-        uint winningProposalId = 0;
-        uint winningVoteCount = 0;
-        for (uint i = 0; i < proposals.length; i++) {
-            if (proposals[i].voteCount > winningVoteCount) {
-                winningProposalId = i;
-                winningVoteCount = proposals[i].voteCount;
-            }
-        }
-
-        return proposals[winningProposalId];
-    }
 
     function registerProposal(
         string memory _description
@@ -144,25 +129,58 @@ contract Voting is Ownable {
     {
         require(_proposalId < proposals.length, "Proposal id does not exist");
 
+        if (voters[msg.sender].hasVoted) {
+            removeVote(voters[msg.sender].votedProposalId);
+        }
+
         voters[msg.sender].hasVoted = true;
         voters[msg.sender].votedProposalId = _proposalId;
-        proposals[_proposalId].voteCount++;
+        proposals[_proposalId].votesCount++;
 
         emit Voted(msg.sender, _proposalId);
     }
 
-    function removeVote()
+    function removeVote(
+        uint _proposalId
+    )
         public
         onlyRegistered
         onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
         require(voters[msg.sender].hasVoted, "You have not voted yet");
+        require(
+            voters[msg.sender].votedProposalId == _proposalId,
+            "You have not voted for this proposal"
+        );
 
-        uint _proposalId = voters[msg.sender].votedProposalId;
         voters[msg.sender].hasVoted = false;
         voters[msg.sender].votedProposalId = 0;
-        proposals[_proposalId].voteCount--;
+        proposals[_proposalId].votesCount--;
 
         emit CancelledVote(msg.sender, _proposalId);
+    }
+
+    /** ALL ACTIONS */
+
+    function getProposals() public view returns (Proposal[] memory) {
+        return proposals;
+    }
+
+    function getWinningProposal()
+        public
+        view
+        onlyDuringWorkflowStatus(WorkflowStatus.VotesTallied)
+        returns (Proposal memory, uint)
+    {
+        uint winningProposalId = 0;
+        uint winningvotesCount = 0;
+        for (uint i = 0; i < proposals.length; i++) {
+            if (proposals[i].votesCount > winningvotesCount) {
+                winningProposalId = i;
+                winningvotesCount = proposals[i].votesCount;
+            }
+        }
+
+        return (proposals[winningProposalId], winningProposalId);
     }
 }

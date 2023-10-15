@@ -31,7 +31,7 @@ export default function VotingSession() {
         _proposals.map((proposal, idx) => ({
           description: proposal.description,
           id: idx,
-          votesCount: Number(proposal.voteCount),
+          votesCount: Number(proposal.votesCount),
         }))
       );
     };

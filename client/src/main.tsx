@@ -11,6 +11,7 @@ import ProposalsRegistration from "./pages/ProposalsRegistration.tsx";
 import ProposalsRegistrationEnd from "./pages/ProposalsRegistrationEnd.tsx";
 import VotingSession from "./pages/VotingSession.tsx";
 import VotingSessionEnd from "./pages/VotingSessionEnd.tsx";
+import VotesResult from "./pages/VotesResult.tsx";
 
 const router = createBrowserRouter([
   {
@@ -40,7 +41,7 @@ const router = createBrowserRouter([
       },
       {
         path: "5",
-        element: <div>Step 5</div>,
+        element: <VotesResult />,
       },
     ],
   },
