@@ -14,7 +14,7 @@ export default function Button({ isLoading, ...props }: ButtonProps) {
     <button
       {...props}
       className={classnames(
-        "bg-blue-500 text-white py-2 px-4 rounded font-semibold hover:bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed space-x-2"
+        "flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded font-semibold hover:bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed space-x-2 "
       )}
     >
       {isLoading && <ButtonSpinner />}
