@@ -8,6 +8,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { RouterProvider } from "react-router";
 import RegisterVoters from "./pages/RegisterVoters.tsx";
 import ProposalsRegistration from "./pages/ProposalsRegistration.tsx";
+import ProposalsRegistrationEnd from "./pages/ProposalsRegistrationEnd.tsx";
 
 const router = createBrowserRouter([
   {
@@ -25,7 +26,7 @@ const router = createBrowserRouter([
       },
       {
         path: "2",
-        element: <div>Step 2</div>,
+        element: <ProposalsRegistrationEnd />,
       },
       {
         path: "3",
