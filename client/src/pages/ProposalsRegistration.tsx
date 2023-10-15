@@ -32,9 +32,10 @@ export default function ProposalsRegistration() {
   };
 
   return (
-    <div className="mt-12 flex flex-col space-y-8 items-center">
+    <div className="flex flex-col items-center mt-12 space-y-8">
       <hr className="w-full" />
       <h3 className="text-3xl font-semibold">Proposals registration</h3>
+      <p className="text-lg">Register a proposal</p>
       <div className="flex flex-col space-y-4 w-[28rem]">
         <Input
           placeholder="Proposal description"
