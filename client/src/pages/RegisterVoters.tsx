@@ -8,25 +8,28 @@ export default function RegisterVoters() {
   const { contract, isOwner } = useContext(VotingContractContext);
 
   const [voterAddressInputValue, setVoterAddressInputValue] = useState("");
+  const [isLoadingVoterRegistration, setIsLoadingVoterRegistration] =
+    useState(false);
 
   const handleVoterAddressInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVoterAddressInputValue(e.target.value);
   };
 
   const handleRegisterVoter = async () => {
+    setIsLoadingVoterRegistration(true);
     try {
       const transaction = await contract?.registerVoter(voterAddressInputValue);
       await transaction?.wait();
     } catch (err) {
       handleContractOperationError(err);
     }
+    setIsLoadingVoterRegistration(false);
   };
 
   return (
     <div className="mt-12 flex flex-col space-y-8 items-center">
       <hr className="w-full" />
       <h3 className="text-3xl font-semibold">Register voter</h3>
-      {/* List all voters */}
 
       {["no", "unknown"].includes(isOwner) && (
         <p className="text-lg text-red-700 font-bold">
@@ -42,7 +45,12 @@ export default function RegisterVoters() {
             value={voterAddressInputValue}
             onChange={handleVoterAddressInputChange}
           />
-          <Button onClick={handleRegisterVoter}>Register voter</Button>
+          <Button
+            onClick={handleRegisterVoter}
+            isLoading={isLoadingVoterRegistration}
+          >
+            Register voter
+          </Button>
         </div>
       )}
     </div>

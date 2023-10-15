@@ -7,6 +7,7 @@ import VotingContractProvider from "./providers/VotingContractProvider.tsx";
 import { createBrowserRouter } from "react-router-dom";
 import { RouterProvider } from "react-router";
 import RegisterVoters from "./pages/RegisterVoters.tsx";
+import ProposalsRegistration from "./pages/ProposalsRegistration.tsx";
 
 const router = createBrowserRouter([
   {
@@ -20,7 +21,7 @@ const router = createBrowserRouter([
       },
       {
         path: "1",
-        element: <div>Step 1</div>,
+        element: <ProposalsRegistration />,
       },
       {
         path: "2",

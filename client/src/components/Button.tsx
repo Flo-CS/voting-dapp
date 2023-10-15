@@ -6,6 +6,10 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 export default function Button({ isLoading, ...props }: ButtonProps) {
+  if (isLoading) {
+    props.disabled = true;
+  }
+
   return (
     <button
       {...props}
