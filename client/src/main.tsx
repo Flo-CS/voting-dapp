@@ -9,6 +9,8 @@ import { RouterProvider } from "react-router";
 import RegisterVoters from "./pages/RegisterVoters.tsx";
 import ProposalsRegistration from "./pages/ProposalsRegistration.tsx";
 import ProposalsRegistrationEnd from "./pages/ProposalsRegistrationEnd.tsx";
+import VotingSession from "./pages/VotingSession.tsx";
+import VotingSessionEnd from "./pages/VotingSessionEnd.tsx";
 
 const router = createBrowserRouter([
   {
@@ -30,11 +32,11 @@ const router = createBrowserRouter([
       },
       {
         path: "3",
-        element: <div>Step 3</div>,
+        element: <VotingSession />,
       },
       {
         path: "4",
-        element: <div>Step 4</div>,
+        element: <VotingSessionEnd />,
       },
       {
         path: "5",

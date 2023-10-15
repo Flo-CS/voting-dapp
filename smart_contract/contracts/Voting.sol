@@ -34,8 +34,8 @@ contract Voting is Ownable {
     event ProposalRegistered(uint proposalId);
     event Voted(address voter, uint proposalId);
 
-    mapping(address => Voter) voters;
-    Proposal[] proposals;
+    mapping(address => Voter) public voters;
+    Proposal[] public proposals;
     WorkflowStatus public currentStatus = WorkflowStatus.RegisteringVoters;
     uint winningProposalId;
 
@@ -70,18 +70,18 @@ contract Voting is Ownable {
         public
         onlyOwner
         notDuringWorkflowStatus(WorkflowStatus.VotesTallied)
-        returns (WorkflowStatus)
     {
         WorkflowStatus _newStatus = WorkflowStatus(uint(currentStatus) + 1);
 
         WorkflowStatus _previousStatus = currentStatus;
         currentStatus = _newStatus;
         emit WorkflowStatusChange(_previousStatus, _newStatus);
-
-        return _newStatus;
     }
 
     /** VOTERS ACTIONS */
+    function getProposals() public view returns (Proposal[] memory) {
+        return proposals;
+    }
 
     function getWinningProposal()
         public
