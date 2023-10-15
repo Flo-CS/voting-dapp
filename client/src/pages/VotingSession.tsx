@@ -19,6 +19,8 @@ export default function VotingSession() {
     const voterVote = (await contract.getVoter(signerAddress)).votedProposalId;
     if (hasVoted) {
       setVotedProposalId(Number(voterVote));
+    } else {
+      setVotedProposalId(null);
     }
   }, [contract, signerAddress]);
 
@@ -45,7 +47,7 @@ export default function VotingSession() {
   async function handleProposalClick(id: number) {
     try {
       let transaction;
-      if (votedProposalId !== null) {
+      if (votedProposalId === id) {
         transaction = await contract?.removeVote(votedProposalId);
       } else {
         transaction = await contract?.vote(id);
