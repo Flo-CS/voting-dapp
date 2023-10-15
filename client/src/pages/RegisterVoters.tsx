@@ -30,7 +30,7 @@ export default function RegisterVoters() {
   return (
     <div className="flex flex-col items-center mt-12 space-y-8">
       <hr className="w-full" />
-      <h3 className="text-3xl font-semibold">Register voter</h3>
+      <h3 className="text-3xl font-semibold">Register voters</h3>
 
       {["no", "unknown"].includes(isOwner) && (
         <WarningMessage message="You are not the owner of the contract, perhaps you will be registered for voting.." />

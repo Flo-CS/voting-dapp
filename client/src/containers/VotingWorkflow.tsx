@@ -84,11 +84,9 @@ export default function VotingInfos() {
   return (
     <div className="flex justify-center w-full space-x-24">
       <div className="flex flex-col items-center space-y-8">
-        <h2 className="text-3xl font-semibold">Contract selection</h2>
         <ContractSelector />
       </div>
       <div className="flex flex-col items-center justify-center space-y-8">
-        <h2 className="text-3xl font-semibold">Voting</h2>
         <Stepper>
           {votingSteps.map((step, idx) => {
             return (
