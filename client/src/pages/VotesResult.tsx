@@ -47,7 +47,7 @@ export default function VotesResult() {
           isWinning={true}
         />
       )}
-      <p className="text-xl">There is votes for all others proposals</p>
+      <p className="text-xl">And the votes for all others proposals</p>
       <ProposalsContainer>
         {proposals
           .filter((proposal) => proposal.id !== winningProposal?.id)
