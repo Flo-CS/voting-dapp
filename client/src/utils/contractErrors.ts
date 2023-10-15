@@ -11,6 +11,8 @@ export function handleContractOperationError(error: unknown) {
     message = "Action rejected";
   } else if (isError(error, "UNCONFIGURED_NAME")) {
     message = "Unconfigured name";
+  } else if (isError(error, "NETWORK_ERROR")) {
+    message = "Network error";
   } else if (isError(error, "UNKNOWN_ERROR")) {
     message = "Unknown error";
   }
