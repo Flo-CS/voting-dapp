@@ -21,6 +21,7 @@ export default function RegisterVoters() {
     try {
       const transaction = await contract?.registerVoter(voterAddressInputValue);
       await transaction?.wait();
+      setVoterAddressInputValue("");
     } catch (err) {
       handleContractOperationError(err);
     }

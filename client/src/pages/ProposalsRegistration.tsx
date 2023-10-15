@@ -25,6 +25,7 @@ export default function ProposalsRegistration() {
         proposalDescriptionInputValue
       );
       await transaction?.wait();
+      setProposalDescriptionInputValue("");
     } catch (err) {
       handleContractOperationError(err);
     }
