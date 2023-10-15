@@ -15,8 +15,11 @@ export default function VotingSessionEnd() {
 
   const fetchVoterVote = useCallback(async () => {
     if (!contract || !signerAddress) return;
-    const voterVote = (await contract.voters(signerAddress)).votedProposalId;
-    setVotedProposalId(Number(voterVote));
+    const hasVoted = (await contract.getVoter(signerAddress)).hasVoted;
+    const voterVote = (await contract.getVoter(signerAddress)).votedProposalId;
+    if (hasVoted) {
+      setVotedProposalId(Number(voterVote));
+    }
   }, [contract, signerAddress]);
 
   useEffect(() => {

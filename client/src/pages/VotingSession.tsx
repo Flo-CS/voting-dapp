@@ -4,6 +4,7 @@ import Web3Context from "../contexts/Web3Context";
 import ProposalsContainer from "../components/ProposalsContainer";
 import { Proposal as ProposalData } from "../types/Proposal";
 import Proposal from "../components/Proposal";
+import { handleContractOperationError } from "../utils/contractErrors";
 
 export default function VotingSession() {
   const { signerAddress } = useContext(Web3Context);
@@ -14,8 +15,11 @@ export default function VotingSession() {
 
   const fetchVoterVote = useCallback(async () => {
     if (!contract || !signerAddress) return;
-    const voterVote = (await contract.voters(signerAddress)).votedProposalId;
-    setVotedProposalId(Number(voterVote));
+    const hasVoted = (await contract.getVoter(signerAddress)).hasVoted;
+    const voterVote = (await contract.getVoter(signerAddress)).votedProposalId;
+    if (hasVoted) {
+      setVotedProposalId(Number(voterVote));
+    }
   }, [contract, signerAddress]);
 
   useEffect(() => {
@@ -39,8 +43,12 @@ export default function VotingSession() {
   }, [fetchVoterVote]);
 
   async function handleProposalClick(id: number) {
-    const transaction = await contract?.vote(id);
-    await transaction?.wait();
+    try {
+      const transaction = await contract?.vote(id);
+      await transaction?.wait();
+    } catch (err) {
+      handleContractOperationError(err);
+    }
     fetchVoterVote();
   }
 

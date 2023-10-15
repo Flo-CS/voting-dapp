@@ -33,11 +33,11 @@ contract Voting is Ownable {
     );
     event ProposalRegistered(uint proposalId);
     event Voted(address voter, uint proposalId);
+    event CancelledVote(address voter, uint proposalId);
 
-    mapping(address => Voter) public voters;
-    Proposal[] public proposals;
+    mapping(address => Voter) voters;
+    Proposal[] proposals;
     WorkflowStatus public currentStatus = WorkflowStatus.RegisteringVoters;
-    uint winningProposalId;
 
     /** MODIFIERS */
 
@@ -63,6 +63,7 @@ contract Voting is Ownable {
 
     function registerVoter(address _voterAddress) public onlyOwner {
         voters[_voterAddress] = Voter(true, false, 0);
+
         emit VoterRegistered(_voterAddress);
     }
 
@@ -72,9 +73,24 @@ contract Voting is Ownable {
         notDuringWorkflowStatus(WorkflowStatus.VotesTallied)
     {
         WorkflowStatus _newStatus = WorkflowStatus(uint(currentStatus) + 1);
-
         WorkflowStatus _previousStatus = currentStatus;
         currentStatus = _newStatus;
+
+        emit WorkflowStatusChange(_previousStatus, _newStatus);
+    }
+
+    function goNextAndSkipEndWorkflowStatus()
+        public
+        onlyOwner
+        notDuringWorkflowStatus(WorkflowStatus.VotesTallied)
+        notDuringWorkflowStatus(WorkflowStatus.RegisteringVoters)
+        notDuringWorkflowStatus(WorkflowStatus.ProposalsRegistrationEnded)
+        notDuringWorkflowStatus(WorkflowStatus.VotingSessionEnded)
+    {
+        WorkflowStatus _newStatus = WorkflowStatus(uint(currentStatus) + 2);
+        WorkflowStatus _previousStatus = currentStatus;
+        currentStatus = _newStatus;
+
         emit WorkflowStatusChange(_previousStatus, _newStatus);
     }
 
@@ -89,6 +105,15 @@ contract Voting is Ownable {
         onlyDuringWorkflowStatus(WorkflowStatus.VotesTallied)
         returns (Proposal memory)
     {
+        uint winningProposalId = 0;
+        uint winningVoteCount = 0;
+        for (uint i = 0; i < proposals.length; i++) {
+            if (proposals[i].voteCount > winningVoteCount) {
+                winningProposalId = i;
+                winningVoteCount = proposals[i].voteCount;
+            }
+        }
+
         return proposals[winningProposalId];
     }
 
@@ -104,6 +129,12 @@ contract Voting is Ownable {
         emit ProposalRegistered(proposals.length - 1);
     }
 
+    function getVoter(
+        address _voterAddress
+    ) public view returns (Voter memory) {
+        return voters[_voterAddress];
+    }
+
     function vote(
         uint _proposalId
     )
@@ -112,31 +143,26 @@ contract Voting is Ownable {
         onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
         require(_proposalId < proposals.length, "Proposal id does not exist");
-        require(!voters[msg.sender].hasVoted, "You have already voted");
 
         voters[msg.sender].hasVoted = true;
         voters[msg.sender].votedProposalId = _proposalId;
         proposals[_proposalId].voteCount++;
 
-        updateWinningProposalId(_proposalId);
-
         emit Voted(msg.sender, _proposalId);
     }
 
-    /** UTILS */
-
-    function updateWinningProposalId(
-        uint _newVotedProposalId
-    )
-        private
+    function removeVote()
+        public
         onlyRegistered
         onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
-        uint winningProposalVoteCount = proposals[winningProposalId].voteCount;
-        if (
-            proposals[_newVotedProposalId].voteCount > winningProposalVoteCount
-        ) {
-            winningProposalId = _newVotedProposalId;
-        }
+        require(voters[msg.sender].hasVoted, "You have not voted yet");
+
+        uint _proposalId = voters[msg.sender].votedProposalId;
+        voters[msg.sender].hasVoted = false;
+        voters[msg.sender].votedProposalId = 0;
+        proposals[_proposalId].voteCount--;
+
+        emit CancelledVote(msg.sender, _proposalId);
     }
 }

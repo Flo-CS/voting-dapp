@@ -29,7 +29,7 @@ export default function Proposal({
       })}
       onClick={handleProposalClick}
     >
-      <div className="flex items-center mx-4 my-2">
+      <div className="flex mx-4 my-2">
         <h4 className="text-lg">
           <span className="font-semibold">{id}</span>. {description}
         </h4>
