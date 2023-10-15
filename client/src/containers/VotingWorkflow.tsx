@@ -93,11 +93,11 @@ export default function VotingInfos() {
     showNextStepButton && activeStepSkipTo !== null;
 
   return (
-    <div className="flex justify-center w-full space-x-24">
-      <div className="flex flex-col items-center space-y-8">
+    <div className="flex flex-col justify-center w-full">
+      <div className="flex flex-col items-center">
         <ContractSelector />
       </div>
-      <div className="flex flex-col items-center justify-center space-y-8">
+      <div className="w-full max-w-4xl mx-auto mt-24 mb-4">
         <Stepper>
           {votingSteps.map((step, idx) => {
             return (
@@ -105,32 +105,31 @@ export default function VotingInfos() {
                 key={step.name}
                 completed={idx <= activeStep}
                 index={idx}
-                isLast={idx === votingSteps.length - 1}
+                isFirst={idx === 0}
               >
                 {step.name}
               </Stepper.Item>
             );
           })}
         </Stepper>
-        <div className="flex flex-col space-y-2">
-          {showNextStepButton && (
-            <Button
-              onClick={sendGoNextWorkflowStatus}
-              isLoading={isLoadingGoNextWorkflowStatus}
-            >
-              Next step
-            </Button>
-          )}
-          {showNextAndSkipToButton && (
-            <Button
-              onClick={sendGoNextAndSkipWorkflowStatus}
-              isLoading={isLoadingGoNextAndSkipWorkflowStatus}
-            >
-              Skip directly to{" "}
-              {votingSteps[activeStepSkipTo].name.toLowerCase()}
-            </Button>
-          )}
-        </div>
+      </div>
+      <div className="flex flex-col items-center space-y-2">
+        {showNextStepButton && (
+          <Button
+            onClick={sendGoNextWorkflowStatus}
+            isLoading={isLoadingGoNextWorkflowStatus}
+          >
+            Next step
+          </Button>
+        )}
+        {showNextAndSkipToButton && (
+          <Button
+            onClick={sendGoNextAndSkipWorkflowStatus}
+            isLoading={isLoadingGoNextAndSkipWorkflowStatus}
+          >
+            Skip directly to {votingSteps[activeStepSkipTo].name.toLowerCase()}
+          </Button>
+        )}
       </div>
     </div>
   );

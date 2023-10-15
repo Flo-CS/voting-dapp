@@ -5,9 +5,9 @@ type InputProps = {
 function Input({ RightEl, ...props }: InputProps) {
   return (
     <>
-      <div className="border-blue-200 border-solid border-2 rounded-lg focus-within:border-blue-500 flex">
+      <div className="flex border-2 border-blue-200 border-solid rounded-lg focus-within:border-blue-500">
         <input
-          className="w-full focus:outline-none my-2 mx-3"
+          className="w-full mx-3 my-2 focus:outline-none"
           {...props}
         ></input>
         {RightEl}
@@ -23,7 +23,7 @@ type RightIconButtonProps = {
 function RightIconButton({ Icon, ...props }: RightIconButtonProps) {
   return (
     <button
-      className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-r-md hover:bg-blue-600"
+      className="px-4 py-2 font-semibold text-white bg-blue-500 rounded-r-md hover:bg-blue-600"
       {...props}
     >
       {Icon}

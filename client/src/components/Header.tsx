@@ -1,7 +1,7 @@
 export default function Header({ children }: { children: React.ReactNode }) {
   return (
-    <header className="flex justify-between py-4 px-8">
-      <h1 className="text-2xl font-bold">Voting Dapp</h1>
+    <header className="flex justify-between px-8 py-4">
+      <h1 className="text-xl font-bold lg:text-2xl">Voting Dapp</h1>
       <div>{children}</div>
     </header>
   );

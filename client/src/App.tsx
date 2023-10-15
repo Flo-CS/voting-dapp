@@ -37,7 +37,7 @@ function App() {
           />
         )}
       </Header>
-      <div className="p-16">
+      <div className="p-4 lg:p-16">
         <VotingInfos />
         <Outlet />
       </div>

@@ -24,7 +24,7 @@ export default function Connection({
     <button
       onClick={handleClick}
       className={classnames(
-        "bg-blue-500 text-white font-semibold py-2 px-4 rounded",
+        "bg-blue-500 text-white font-semibold py-2 px-4 rounded text-sm lg:text",
         { "hover:bg-blue-700": !isConnected }
       )}
       {...props}
