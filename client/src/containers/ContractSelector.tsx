@@ -3,6 +3,7 @@ import { MdSend } from "react-icons/md";
 import Input from "../components/Input";
 import OwnerBadge from "../components/OwnerBadge";
 import VotingContractContext from "../contexts/VotingContractContext";
+import Button from "../components/Button";
 
 export default function ContractSelector() {
   const {
@@ -48,12 +49,9 @@ export default function ContractSelector() {
         <OwnerBadge isOwner={isOwner} />
       </div>
       <p className="font-semibold text-lg">OR</p>
-      <button
-        className="bg-blue-500 px-4 py-2 rounded text-white font-semibold"
-        onClick={deployNewVotingContract}
-      >
+      <Button onClick={deployNewVotingContract}>
         Deploy new voting contract
-      </button>
+      </Button>
     </div>
   );
 }

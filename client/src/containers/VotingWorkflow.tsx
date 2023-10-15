@@ -1,14 +1,11 @@
-import classnames from "classnames";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import ButtonSpinner from "../components/ButtonSpinner";
+import Button from "../components/Button";
 import Stepper from "../components/Stepper";
 import VotingContractContext from "../contexts/VotingContractContext";
 import { handleContractOperationError } from "../utils/contractErrors";
-import ContractSelector from "./ContractSelector";
-import { EventLog } from "ethers";
-import useContractFunctionCall from "../hooks/useContractFunctionCall";
 import { getEventsArgs } from "../utils/contracts";
+import ContractSelector from "./ContractSelector";
 
 const votingSteps = [
   "Register voters",
@@ -28,9 +25,11 @@ export default function VotingInfos() {
   const { contract, isOwner } = useContext(VotingContractContext);
 
   const fetchWorkflowStatus = useCallback(async () => {
+    if (!contract) return;
+
     setIsLoadingWorkflowStatus(true);
     try {
-      const status = await contract?.currentStatus();
+      const status = await contract.currentStatus();
       setActiveStep(Number(status));
     } catch (error) {
       handleContractOperationError(error);
@@ -39,13 +38,16 @@ export default function VotingInfos() {
   }, [contract]);
 
   const sendGoNextWorkflowStatus = useCallback(async () => {
+    if (!contract) return;
+
     setIsLoadingWorkflowStatus(true);
     try {
-      const transaction = await contract?.goNextWorkflowStatus();
-      const receipt = await transaction?.wait();
+      const transaction = await contract.goNextWorkflowStatus();
+      const receipt = await transaction.wait();
       const newStatus = Number(getEventsArgs(receipt)?.[1]);
       // OR: Listen to the event WorkflowStatusChange (but it works completely randomly)
       // OR: Fetch again the status
+      // OR: make a static/read-only call to the contract before sending the transaction
       setActiveStep(newStatus);
     } catch (error) {
       handleContractOperationError(error);
@@ -70,8 +72,7 @@ export default function VotingInfos() {
   }, [contract, navigate]); */
 
   useEffect(() => {
-    if (!activeStep) return;
-    navigate(`/voting-dapp/${activeStep}`);
+    navigate(`${activeStep}`);
   }, [activeStep, navigate]);
 
   useEffect(() => {
@@ -103,16 +104,12 @@ export default function VotingInfos() {
           })}
         </Stepper>
         {showNextStepButton && (
-          <button
-            className={classnames(
-              "bg-blue-500 text-white py-2 px-4 rounded font-semibold hover:bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center space-x-2"
-            )}
-            disabled={isLoadingWorkflowStatus}
+          <Button
             onClick={sendGoNextWorkflowStatus}
+            disabled={isLoadingWorkflowStatus}
           >
-            {isLoadingWorkflowStatus && <ButtonSpinner />}
             Next step
-          </button>
+          </Button>
         )}
       </div>
     </div>

@@ -1,4 +1,5 @@
-import { useContext, useState, ChangeEvent, useEffect } from "react";
+import { ChangeEvent, useContext, useState } from "react";
+import Button from "../components/Button";
 import Input from "../components/Input";
 import VotingContractContext from "../contexts/VotingContractContext";
 import { handleContractOperationError } from "../utils/contractErrors";
@@ -21,26 +22,6 @@ export default function RegisterVoters() {
     }
   };
 
-  useEffect(() => {
-    const handleEvent = (voterAddress: string) => {
-      console.log("Voter registered", voterAddress);
-    };
-
-    const addEventListener = async () => {
-      await contract?.on(contract.getEvent("VoterRegistered"), handleEvent);
-    };
-
-    const removeEventListener = async () => {
-      await contract?.off(contract.getEvent("VoterRegistered"), handleEvent);
-    };
-
-    addEventListener();
-
-    return () => {
-      removeEventListener();
-    };
-  }, [contract]);
-
   return (
     <div className="mt-12 flex flex-col space-y-8 items-center">
       <hr className="w-full" />
@@ -61,12 +42,7 @@ export default function RegisterVoters() {
             value={voterAddressInputValue}
             onChange={handleVoterAddressInputChange}
           />
-          <button
-            className="bg-blue-500 px-4 py-2 rounded text-white font-semibold hover:bg-blue-600 "
-            onClick={handleRegisterVoter}
-          >
-            Register voter
-          </button>
+          <Button onClick={handleRegisterVoter}>Register voter</Button>
         </div>
       )}
     </div>
