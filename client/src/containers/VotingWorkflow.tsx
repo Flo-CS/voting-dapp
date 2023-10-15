@@ -8,33 +8,39 @@ import { getEventsArgs } from "../utils/contracts";
 import ContractSelector from "./ContractSelector";
 
 const votingSteps = [
-  "Register voters",
-  "Proposals registration",
-  "Proposals registration end",
-  "Voting session",
-  "Voting session end",
-  "Votes result",
+  { name: "Register voters", skipTo: null },
+  { name: "Proposals registration", skipTo: 3 },
+  { name: "Proposals registration end", skipTo: null },
+  { name: "Voting session", skipTo: 5 },
+  { name: "Voting session end", skipTo: null },
+  { name: "Votes result", skipTo: null },
 ];
 
 export default function VotingInfos() {
   const navigate = useNavigate();
 
   const [activeStep, setActiveStep] = useState(0);
-  const [isLoadingWorkflowStatus, setIsLoadingWorkflowStatus] = useState(false);
+  const [isLoadingGoNextWorkflowStatus, setIsLoadingWorkflowStatus] =
+    useState(false);
+
+  const [
+    isLoadingGoNextAndSkipWorkflowStatus,
+    setIsLoadingGoNextAndSkipWorkflowStatus,
+  ] = useState(false);
 
   const { contract, isOwner } = useContext(VotingContractContext);
+
+  const activeStepSkipTo = votingSteps[activeStep].skipTo;
 
   const fetchWorkflowStatus = useCallback(async () => {
     if (!contract) return;
 
-    setIsLoadingWorkflowStatus(true);
     try {
       const status = await contract.currentStatus();
       setActiveStep(Number(status));
     } catch (error) {
       handleContractOperationError(error);
     }
-    setIsLoadingWorkflowStatus(false);
   }, [contract]);
 
   const sendGoNextWorkflowStatus = useCallback(async () => {
@@ -47,7 +53,7 @@ export default function VotingInfos() {
       const newStatus = Number(getEventsArgs(receipt)?.[1]);
       // OR: Listen to the event WorkflowStatusChange (but it works completely randomly)
       // OR: Fetch again the status
-      // OR: make a static/read-only call to the contract before sending the transaction
+      // OR: make a static call/read-only call to the contract before sending the transaction
       setActiveStep(newStatus);
     } catch (error) {
       handleContractOperationError(error);
@@ -55,21 +61,23 @@ export default function VotingInfos() {
     setIsLoadingWorkflowStatus(false);
   }, [contract]);
 
-  /*useEffect(() => {
-    const handleEvent = (_: bigint, status: bigint) => {
-      console.log("WorkflowStatusChange", status.toString());
-      setActiveStep(Number(status));
-      navigate(`/voting-dapp/${status}`);
-    };
+  const sendGoNextAndSkipWorkflowStatus = useCallback(async () => {
+    if (!contract) return;
 
-    contract?.addListener("WorkflowStatusChange", handleEvent);
-    console.log("addListener");
-
-    return () => {
-      console.log("removeListener");
-      //contract?.removeListener("WorkflowStatusChange", handleEvent);
-    };
-  }, [contract, navigate]); */
+    setIsLoadingGoNextAndSkipWorkflowStatus(true);
+    try {
+      const transaction = await contract.goNextAndSkipEndWorkflowStatus();
+      const receipt = await transaction.wait();
+      const newStatus = Number(getEventsArgs(receipt)?.[1]);
+      // OR: Listen to the event WorkflowStatusChange (but it works completely randomly)
+      // OR: Fetch again the status
+      // OR: make a static call/read-only call to the contract before sending the transaction
+      setActiveStep(newStatus);
+    } catch (error) {
+      handleContractOperationError(error);
+    }
+    setIsLoadingGoNextAndSkipWorkflowStatus(false);
+  }, [contract]);
 
   useEffect(() => {
     navigate(`${activeStep}`);
@@ -81,6 +89,9 @@ export default function VotingInfos() {
 
   const showNextStepButton =
     isOwner === "yes" && activeStep < votingSteps.length - 1;
+  const showNextAndSkipToButton =
+    showNextStepButton && activeStepSkipTo !== null;
+
   return (
     <div className="flex justify-center w-full space-x-24">
       <div className="flex flex-col items-center space-y-8">
@@ -91,24 +102,35 @@ export default function VotingInfos() {
           {votingSteps.map((step, idx) => {
             return (
               <Stepper.Item
-                key={step}
+                key={step.name}
                 completed={idx <= activeStep}
                 index={idx}
                 isLast={idx === votingSteps.length - 1}
               >
-                {step}
+                {step.name}
               </Stepper.Item>
             );
           })}
         </Stepper>
-        {showNextStepButton && (
-          <Button
-            onClick={sendGoNextWorkflowStatus}
-            isLoading={isLoadingWorkflowStatus}
-          >
-            Next step
-          </Button>
-        )}
+        <div className="flex flex-col space-y-2">
+          {showNextStepButton && (
+            <Button
+              onClick={sendGoNextWorkflowStatus}
+              isLoading={isLoadingGoNextWorkflowStatus}
+            >
+              Next step
+            </Button>
+          )}
+          {showNextAndSkipToButton && (
+            <Button
+              onClick={sendGoNextAndSkipWorkflowStatus}
+              isLoading={isLoadingGoNextAndSkipWorkflowStatus}
+            >
+              Skip directly to{" "}
+              {votingSteps[activeStepSkipTo].name.toLowerCase()}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
