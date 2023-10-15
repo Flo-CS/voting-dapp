@@ -44,7 +44,12 @@ export default function VotingSession() {
 
   async function handleProposalClick(id: number) {
     try {
-      const transaction = await contract?.vote(id);
+      let transaction;
+      if (votedProposalId !== null) {
+        transaction = await contract?.removeVote(votedProposalId);
+      } else {
+        transaction = await contract?.vote(id);
+      }
       await transaction?.wait();
     } catch (err) {
       handleContractOperationError(err);
@@ -56,7 +61,7 @@ export default function VotingSession() {
     <div className="flex flex-col items-center mt-12 space-y-8">
       <hr className="w-full" />
       <h3 className="text-3xl font-semibold">Voting session</h3>
-      <p className="text-lg">Select a proposal and vote for it.</p>
+      <p className="text-lg">Select a proposal and vote for it</p>
       <ProposalsContainer>
         {proposals.map((proposal) => {
           return (
