@@ -13,6 +13,8 @@ export function handleContractOperationError(error: unknown) {
     message = "Unconfigured name";
   } else if (isError(error, "NETWORK_ERROR")) {
     message = "Network error";
+  } else if (isError(error, "BAD_DATA")) {
+    message = "Bad data";
   } else if (isError(error, "UNKNOWN_ERROR")) {
     message = "Unknown error";
   }
