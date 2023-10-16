@@ -25,7 +25,7 @@ function App() {
     <>
       <Header>
         {!provider ? (
-          <p className="text-xl font-bold text-red-500">
+          <p className="text-xl font-semibold text-red-500">
             Please install Metamask
           </p>
         ) : (

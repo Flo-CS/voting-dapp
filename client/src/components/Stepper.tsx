@@ -6,7 +6,7 @@ type StepperProps = {
 
 function Stepper({ children }: StepperProps) {
   return (
-    <div className="flex flex-col items-center w-full mb-20 lg:flex-row">
+    <div className="flex flex-col items-center w-full mb-6 lg:mb-20 lg:flex-row">
       {children}
     </div>
   );

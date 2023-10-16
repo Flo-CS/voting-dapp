@@ -31,9 +31,9 @@ export default function ContractSelector() {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4 ">
-      <div className="flex flex-col justify-center lg:flex-row">
-        <div className="mr-3 w-full lg:w-[28rem]">
+    <div className="flex flex-col items-center space-y-4 w-full">
+      <div className="flex flex-col items-end md:flex-row w-full gap-4 max-w-xl justify-center lg:items-center">
+        <div className="w-full">
           <Input
             placeholder="Enter deployed contract address"
             value={contractAddressInputValue}
@@ -49,7 +49,7 @@ export default function ContractSelector() {
         <OwnerBadge isOwner={isOwner} />
       </div>
       <p className="text-lg font-semibold">OR</p>
-      <Button onClick={deployNewVotingContract}>
+      <Button onClick={deployNewVotingContract} variant="primary">
         Deploy new voting contract
       </Button>
     </div>

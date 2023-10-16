@@ -7,7 +7,7 @@ type OwnerBadgeProps = {
 export default function OwnerBadge({ isOwner }: OwnerBadgeProps) {
   return (
     <>
-      <div className="border-blue-500 border-2 border-solid  rounded-lg px-4 py-1 text-xl font-semibold flex items-center">
+      <div className="border-gray-700 border border-solid  flex-shrink-0 rounded px-4 py-2 text-xl font-semibold flex items-center">
         {isOwner === "yes" && (
           <>
             <MdPerson />

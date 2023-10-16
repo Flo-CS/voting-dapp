@@ -97,7 +97,8 @@ export default function VotingInfos() {
       <div className="flex flex-col items-center">
         <ContractSelector />
       </div>
-      <div className="w-full max-w-4xl mx-auto mt-24 mb-4">
+      <hr className="w-full my-16" />
+      <div className="w-full max-w-4xl mx-auto mb-4">
         <Stepper>
           {votingSteps.map((step, idx) => {
             return (
@@ -113,23 +114,27 @@ export default function VotingInfos() {
           })}
         </Stepper>
       </div>
-      <div className="flex flex-col items-center space-y-2">
-        {showNextStepButton && (
-          <Button
-            onClick={sendGoNextWorkflowStatus}
-            isLoading={isLoadingGoNextWorkflowStatus}
-          >
-            Next step
-          </Button>
-        )}
-        {showNextAndSkipToButton && (
-          <Button
-            onClick={sendGoNextAndSkipWorkflowStatus}
-            isLoading={isLoadingGoNextAndSkipWorkflowStatus}
-          >
-            Skip directly to {votingSteps[activeStepSkipTo].name.toLowerCase()}
-          </Button>
-        )}
+      <div className="flex flex-col items-center">
+        <div className="flex flex-col space-y-2">
+          {showNextStepButton && (
+            <Button
+              onClick={sendGoNextWorkflowStatus}
+              isLoading={isLoadingGoNextWorkflowStatus}
+              variant="primary"
+            >
+              Next step
+            </Button>
+          )}
+          {showNextAndSkipToButton && (
+            <Button
+              onClick={sendGoNextAndSkipWorkflowStatus}
+              isLoading={isLoadingGoNextAndSkipWorkflowStatus}
+            >
+              Skip directly to{" "}
+              {votingSteps[activeStepSkipTo].name.toLowerCase()}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

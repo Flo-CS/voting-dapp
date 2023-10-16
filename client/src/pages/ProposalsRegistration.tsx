@@ -36,7 +36,7 @@ export default function ProposalsRegistration() {
     <div className="flex flex-col items-center mt-12 space-y-8">
       <hr className="w-full" />
       <h3 className="text-3xl font-semibold">Proposals registration</h3>
-      <div className="flex flex-col space-y-4 w-[28rem]">
+      <div className="flex flex-col space-y-4 w-full md:w-[28rem]">
         <Input
           placeholder="Proposal description"
           value={proposalDescriptionInputValue}
@@ -45,6 +45,7 @@ export default function ProposalsRegistration() {
         <Button
           onClick={handleRegisterProposals}
           isLoading={isLoadingProposalRegistration}
+          variant="primary"
         >
           Register proposal
         </Button>

@@ -38,7 +38,7 @@ export default function RegisterVoters() {
       )}
 
       {isOwner === "yes" && (
-        <div className="flex flex-col space-y-4 w-[28rem]">
+        <div className="flex flex-col space-y-4 w-full md:w-[28rem]">
           <Input
             placeholder="Voter address"
             value={voterAddressInputValue}
@@ -47,6 +47,7 @@ export default function RegisterVoters() {
           <Button
             onClick={handleRegisterVoter}
             isLoading={isLoadingVoterRegistration}
+            variant="primary"
           >
             Register voter
           </Button>
