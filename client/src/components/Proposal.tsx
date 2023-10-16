@@ -39,7 +39,7 @@ export default function Proposal({
       </div>
       {showVotesCount && (
         <>
-          <div className="absolute top-0 right-0 flex items-center justify-center px-3 py-1 text-lg font-bold text-white bg-blue-500 border-2 border-white border-solid rounded-full translate-x-2/4 -translate-y-2/4">
+          <div className="absolute top-0 right-0 flex items-center justify-center px-3 py-1 text-lg font-bold text-white bg-green-500 border-2 border-white border-solid rounded-full translate-x-2/4 -translate-y-2/4">
             {votesCount}{" "}
             {isWinning && (
               <span className="ml-2 ">

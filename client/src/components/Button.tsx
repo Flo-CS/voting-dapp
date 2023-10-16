@@ -21,7 +21,7 @@ export default function Button({
       className={classNames(
         "flex items-center justify-center py-2 px-4 rounded font-semibold  disabled:cursor-not-allowed space-x-2 transition duration-200",
         {
-          "bg-blue-500  text-white hover:bg-blue-600 ": variant === "primary",
+          "bg-green-500  text-white hover:bg-green-600 ": variant === "primary",
         },
         {
           "border-gray-700 border text-gray-700 bg-gray-0 hover:bg-gray-100 ":
