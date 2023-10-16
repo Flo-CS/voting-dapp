@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Web3Context from "../contexts/Web3Context";
 import { BrowserProvider, Signer, ethers } from "ethers";
+import { handleContractOperationError } from "../utils/contractErrors";
 
 export default function Web3Provider({
   children,
@@ -12,14 +13,14 @@ export default function Web3Provider({
   const [signerAddress, setSignerAddress] = useState<string | undefined>();
 
   const connectSigner = useCallback(
-    async (account?: string) => {
+    async (address?: string) => {
       try {
-        const signer = await provider?.getSigner(account);
+        const signer = await provider?.getSigner(address);
         setSigner(signer);
         const signerAddress = await signer?.getAddress();
         setSignerAddress(signerAddress);
       } catch (error) {
-        console.error("Could not connect signer");
+        handleContractOperationError(error);
       }
     },
     [provider]

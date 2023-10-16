@@ -5,44 +5,51 @@ type StepperProps = {
 };
 
 function Stepper({ children }: StepperProps) {
-  return <ul className="flex flex-col">{children}</ul>;
+  return (
+    <div className="flex flex-col items-center w-full mb-6 lg:mb-20 lg:flex-row">
+      {children}
+    </div>
+  );
 }
 
 type ItemProps = {
   completed: boolean;
   children: React.ReactNode;
   index: number;
-  isLast?: boolean;
+  isFirst?: boolean;
 };
 
-function Item({ completed, children, index, isLast }: ItemProps) {
+function Item({ completed, children, index, isFirst }: ItemProps) {
   return (
-    <li
-      className={classNames("", {
-        "text-blue-500": completed,
-        "text-black": !completed,
-      })}
-    >
-      <div className="flex ">
-        <div className="flex flex-col items-center">
-          <div
-            className={classNames(
-              "h-7 w-7 rounded-full text-white flex items-center justify-center font-semibold",
-              {
-                "bg-blue-500": completed,
-                "bg-black": !completed,
-              }
-            )}
-          >
-            {index}
-          </div>
-          {!isLast && (
-            <span className="inline-block h-5 w-0.5 bg-slate-200"></span>
+    <>
+      {!isFirst && (
+        <div
+          className={classNames(
+            "flex-auto border-l-2 lg:border-t-2 h-4 lg:h-0 mr-32 lg:mr-0",
+            {
+              "border-blue-300": completed,
+              "border-gray-300": !completed,
+            }
           )}
+        ></div>
+      )}
+      <div className="relative flex items-center mr-32 lg:mr-0">
+        <div
+          className={classNames(
+            "flex items-center justify-center w-10 h-10 py-3 font-semibold text-white rounded-full ",
+            {
+              "bg-blue-500": completed,
+              "bg-black": !completed,
+            }
+          )}
+        >
+          {index}
         </div>
-        <span className="text ml-3 mt-0.5">{children}</span>
+        <div className="absolute left-0 w-48 ml-12 font-medium text-black lg:text-center lg:top-0 lg:w-32 lg:mt-12 lg:-ml-10 text">
+          {children}
+        </div>
       </div>
-    </li>
+    </>
   );
 }
 

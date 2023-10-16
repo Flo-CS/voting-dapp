@@ -6,6 +6,9 @@ import Header from "./components/Header";
 import VotingInfos from "./containers/VotingWorkflow";
 import Web3Context from "./contexts/Web3Context";
 import { middleTruncate } from "./utils/text";
+import { ToastContainer, Slide } from "react-toastify";
+
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const { provider, signer, signerAddress, connectSigner } =
@@ -22,7 +25,7 @@ function App() {
     <>
       <Header>
         {!provider ? (
-          <p className="text-xl text-red-500 font-bold">
+          <p className="text-xl font-semibold text-red-500">
             Please install Metamask
           </p>
         ) : (
@@ -34,10 +37,25 @@ function App() {
           />
         )}
       </Header>
-      <div className="p-8">
+      <div className="p-4 lg:p-16">
         <VotingInfos />
         <Outlet />
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        limit={3}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Slide}
+        icon={true}
+      />
     </>
   );
 }

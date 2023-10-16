@@ -3,6 +3,7 @@ import VotingContractContext from "../contexts/VotingContractContext";
 import Web3Context from "../contexts/Web3Context";
 import useVotingContract from "../hooks/useContract";
 import { deployVotingContract } from "../utils/votingContract";
+import { handleContractOperationError } from "../utils/contractErrors";
 
 export default function VotingContractProvider({
   children,
@@ -17,10 +18,14 @@ export default function VotingContractProvider({
   const { isOwner, contract } = useVotingContract(contractAddress, signer);
 
   const deployNewVotingContract = useCallback(async () => {
-    if (signer) {
+    if (!signer) return;
+
+    try {
       const contract = await deployVotingContract(signer);
       const contractAddress = await contract.getAddress();
       setContractAddress(contractAddress);
+    } catch (err) {
+      handleContractOperationError(err);
     }
   }, [signer]);
 

@@ -14,7 +14,7 @@ contract Voting is Ownable {
 
     struct Proposal {
         string description;
-        uint voteCount;
+        uint votesCount;
     }
 
     enum WorkflowStatus {
@@ -33,11 +33,11 @@ contract Voting is Ownable {
     );
     event ProposalRegistered(uint proposalId);
     event Voted(address voter, uint proposalId);
+    event CancelledVote(address voter, uint proposalId);
 
     mapping(address => Voter) voters;
-    Proposal[] public proposals;
-    WorkflowStatus public workflowStatus = WorkflowStatus.RegisteringVoters;
-    uint private winningProposalId;
+    Proposal[] proposals;
+    WorkflowStatus public currentStatus = WorkflowStatus.RegisteringVoters;
 
     /** MODIFIERS */
 
@@ -50,46 +50,57 @@ contract Voting is Ownable {
     }
 
     modifier onlyDuringWorkflowStatus(WorkflowStatus _status) {
-        require(workflowStatus == _status, "You can't do this right now");
+        require(currentStatus == _status, "Can't do this right now");
         _;
     }
 
-    /** ADMINISTRATOR ACTIONS */
+    modifier notDuringWorkflowStatus(WorkflowStatus _status) {
+        require(currentStatus != _status, "Can't do this right now");
+        _;
+    }
 
-    function registerVoter(address _voterAddress) public onlyOwner {
+    /** OWNER ACTIONS */
+
+    function registerVoter(
+        address _voterAddress
+    )
+        public
+        onlyOwner
+        onlyDuringWorkflowStatus(WorkflowStatus.RegisteringVoters)
+    {
         voters[_voterAddress] = Voter(true, false, 0);
+
         emit VoterRegistered(_voterAddress);
     }
 
-    function goNextWorkflowStatus() public onlyOwner {
-        require(
-            workflowStatus != WorkflowStatus.VotesTallied,
-            "Voting session is over"
-        );
-        WorkflowStatus _newStatus = WorkflowStatus(uint(workflowStatus) + 1);
-        changeWorkflowStatus(_newStatus);
+    function goNextWorkflowStatus()
+        public
+        onlyOwner
+        notDuringWorkflowStatus(WorkflowStatus.VotesTallied)
+    {
+        WorkflowStatus _newStatus = WorkflowStatus(uint(currentStatus) + 1);
+        WorkflowStatus _previousStatus = currentStatus;
+        currentStatus = _newStatus;
+
+        emit WorkflowStatusChange(_previousStatus, _newStatus);
     }
 
-    function changeWorkflowStatus(WorkflowStatus _newStatus) private onlyOwner {
-        require(
-            _newStatus > workflowStatus,
-            "New status must be after the current status"
-        );
-        WorkflowStatus _previousStatus = workflowStatus;
-        workflowStatus = _newStatus;
+    function goNextAndSkipEndWorkflowStatus()
+        public
+        onlyOwner
+        notDuringWorkflowStatus(WorkflowStatus.VotesTallied)
+        notDuringWorkflowStatus(WorkflowStatus.RegisteringVoters)
+        notDuringWorkflowStatus(WorkflowStatus.ProposalsRegistrationEnded)
+        notDuringWorkflowStatus(WorkflowStatus.VotingSessionEnded)
+    {
+        WorkflowStatus _newStatus = WorkflowStatus(uint(currentStatus) + 2);
+        WorkflowStatus _previousStatus = currentStatus;
+        currentStatus = _newStatus;
+
         emit WorkflowStatusChange(_previousStatus, _newStatus);
     }
 
     /** VOTERS ACTIONS */
-
-    function getWinningProposal()
-        public
-        view
-        onlyDuringWorkflowStatus(WorkflowStatus.VotesTallied)
-        returns (Proposal memory)
-    {
-        return proposals[winningProposalId];
-    }
 
     function registerProposal(
         string memory _description
@@ -103,6 +114,12 @@ contract Voting is Ownable {
         emit ProposalRegistered(proposals.length - 1);
     }
 
+    function getVoter(
+        address _voterAddress
+    ) public view returns (Voter memory) {
+        return voters[_voterAddress];
+    }
+
     function vote(
         uint _proposalId
     )
@@ -111,24 +128,59 @@ contract Voting is Ownable {
         onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
         require(_proposalId < proposals.length, "Proposal id does not exist");
-        require(!voters[msg.sender].hasVoted, "You have already voted");
+
+        if (voters[msg.sender].hasVoted) {
+            removeVote(voters[msg.sender].votedProposalId);
+        }
 
         voters[msg.sender].hasVoted = true;
         voters[msg.sender].votedProposalId = _proposalId;
-        proposals[_proposalId].voteCount++;
-        updateWinningProposalId(_proposalId);
+        proposals[_proposalId].votesCount++;
 
         emit Voted(msg.sender, _proposalId);
     }
 
-    /** UTILS */
+    function removeVote(
+        uint _proposalId
+    )
+        public
+        onlyRegistered
+        onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
+    {
+        require(voters[msg.sender].hasVoted, "You have not voted yet");
+        require(
+            voters[msg.sender].votedProposalId == _proposalId,
+            "You have not voted for this proposal"
+        );
 
-    function updateWinningProposalId(uint _newVotedProposalId) private {
-        uint winningProposalVoteCount = proposals[winningProposalId].voteCount;
-        if (
-            proposals[_newVotedProposalId].voteCount > winningProposalVoteCount
-        ) {
-            winningProposalId = _newVotedProposalId;
+        voters[msg.sender].hasVoted = false;
+        voters[msg.sender].votedProposalId = 0;
+        proposals[_proposalId].votesCount--;
+
+        emit CancelledVote(msg.sender, _proposalId);
+    }
+
+    /** ALL ACTIONS */
+
+    function getProposals() public view returns (Proposal[] memory) {
+        return proposals;
+    }
+
+    function getWinningProposal()
+        public
+        view
+        onlyDuringWorkflowStatus(WorkflowStatus.VotesTallied)
+        returns (Proposal memory, uint)
+    {
+        uint winningProposalId = 0;
+        uint winningvotesCount = 0;
+        for (uint i = 0; i < proposals.length; i++) {
+            if (proposals[i].votesCount > winningvotesCount) {
+                winningProposalId = i;
+                winningvotesCount = proposals[i].votesCount;
+            }
         }
+
+        return (proposals[winningProposalId], winningProposalId);
     }
 }

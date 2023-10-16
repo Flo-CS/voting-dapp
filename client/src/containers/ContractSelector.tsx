@@ -3,6 +3,7 @@ import { MdSend } from "react-icons/md";
 import Input from "../components/Input";
 import OwnerBadge from "../components/OwnerBadge";
 import VotingContractContext from "../contexts/VotingContractContext";
+import Button from "../components/Button";
 
 export default function ContractSelector() {
   const {
@@ -30,9 +31,9 @@ export default function ContractSelector() {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4 ">
-      <div className="flex justify-center ">
-        <div className="mr-3 w-[28rem]">
+    <div className="flex flex-col items-center space-y-4 w-full">
+      <div className="flex flex-col items-end md:flex-row w-full gap-4 max-w-xl justify-center lg:items-center">
+        <div className="w-full">
           <Input
             placeholder="Enter deployed contract address"
             value={contractAddressInputValue}
@@ -47,13 +48,10 @@ export default function ContractSelector() {
         </div>
         <OwnerBadge isOwner={isOwner} />
       </div>
-      <p className="font-semibold text-lg">OR</p>
-      <button
-        className="bg-blue-500 px-4 py-2 rounded text-white font-semibold"
-        onClick={deployNewVotingContract}
-      >
+      <p className="text-lg font-semibold">OR</p>
+      <Button onClick={deployNewVotingContract} variant="primary">
         Deploy new voting contract
-      </button>
+      </Button>
     </div>
   );
 }

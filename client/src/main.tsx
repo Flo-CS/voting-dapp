@@ -7,6 +7,11 @@ import VotingContractProvider from "./providers/VotingContractProvider.tsx";
 import { createBrowserRouter } from "react-router-dom";
 import { RouterProvider } from "react-router";
 import RegisterVoters from "./pages/RegisterVoters.tsx";
+import ProposalsRegistration from "./pages/ProposalsRegistration.tsx";
+import ProposalsRegistrationEnd from "./pages/ProposalsRegistrationEnd.tsx";
+import VotingSession from "./pages/VotingSession.tsx";
+import VotingSessionEnd from "./pages/VotingSessionEnd.tsx";
+import VotesResult from "./pages/VotesResult.tsx";
 
 const router = createBrowserRouter([
   {
@@ -20,23 +25,23 @@ const router = createBrowserRouter([
       },
       {
         path: "1",
-        element: <div>Step 1</div>,
+        element: <ProposalsRegistration />,
       },
       {
         path: "2",
-        element: <div>Step 2</div>,
+        element: <ProposalsRegistrationEnd />,
       },
       {
         path: "3",
-        element: <div>Step 3</div>,
+        element: <VotingSession />,
       },
       {
         path: "4",
-        element: <div>Step 4</div>,
+        element: <VotingSessionEnd />,
       },
       {
         path: "5",
-        element: <div>Step 5</div>,
+        element: <VotesResult />,
       },
     ],
   },
