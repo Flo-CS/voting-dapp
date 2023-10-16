@@ -1,9 +1,12 @@
 import classNames from "classnames";
 import { HTMLAttributes } from "react";
 
-type ButtonSpinnerProps = HTMLAttributes<SVGElement>;
+type ButtonSpinnerProps = { color: string } & HTMLAttributes<SVGElement>;
 
-export default function ButtonSpinner({ ...props }: ButtonSpinnerProps) {
+export default function ButtonSpinner({
+  color = "white",
+  ...props
+}: ButtonSpinnerProps) {
   return (
     <svg
       aria-hidden="true"
@@ -13,7 +16,8 @@ export default function ButtonSpinner({ ...props }: ButtonSpinnerProps) {
       xmlns="http://www.w3.org/2000/svg"
       {...props}
       className={classNames(
-        "inline mr-2 w-4 h-4 text-white animate-spin dark:text-gray-600",
+        "inline mr-2 w-4 h-4 animate-spin",
+        `text-${color}`,
         props.className
       )}
     >

@@ -43,7 +43,7 @@ export default function Proposal({
             {votesCount}{" "}
             {isWinning && (
               <span className="ml-2 ">
-                <MdStar className="w-6 h-6 text-yellow-400" />
+                <MdStar className="w-6 h-6 text-yellow-300" />
               </span>
             )}
           </div>

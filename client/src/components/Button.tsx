@@ -29,7 +29,14 @@ export default function Button({
         }
       )}
     >
-      {isLoading && <ButtonSpinner className={classNames("text-gray-700")} />}
+      {isLoading && (
+        <ButtonSpinner
+          color={classNames({
+            white: variant === "primary",
+            "gray-700": variant === "secondary",
+          })}
+        />
+      )}
       {props.children}
     </button>
   );
