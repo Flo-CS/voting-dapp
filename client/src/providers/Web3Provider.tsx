@@ -49,6 +49,8 @@ export default function Web3Provider({
   }, []);
 
   useEffect(() => {
+    if (!window.ethereum) return;
+
     // Ethersjs does not support the "accountsChanged" event
     window.ethereum.on("accountsChanged", handleAccountsChanged);
 
