@@ -1,13 +1,17 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import ProposalsContainer from "../components/ProposalsContainer";
 import VotingContractContext from "../contexts/VotingContractContext";
 import { Proposal as ProposalData } from "../types/Proposal";
 import Proposal from "../components/Proposal";
+import { Voter } from "../types/Voter";
+import { handleContractOperationError } from "../utils/contractErrors";
+import Voters from "../components/Voters";
 
 export default function VotesResult() {
   const { contract } = useContext(VotingContractContext);
   const [proposals, setProposals] = useState<ProposalData[]>([]);
   const [winningProposal, setWinningProposal] = useState<ProposalData>();
+  const [voters, setVoters] = useState<Voter[]>([]);
 
   useEffect(() => {
     if (!contract) return;
@@ -33,9 +37,32 @@ export default function VotesResult() {
     fetchProposals();
   }, [contract]);
 
+  const fetchVoters = useCallback(async () => {
+    try {
+      const _voters = (await contract?.getVoters())?.map<Voter>((voter) => ({
+        hasVoted: voter.hasVoted,
+        isRegistered: voter.isRegistered,
+        votedProposalId: Number(voter.votedProposalId),
+        address: voter.addr,
+      }));
+
+      setVoters(_voters ?? []);
+    } catch (err) {
+      handleContractOperationError(err);
+    }
+  }, [contract]);
+  useEffect(() => {
+    fetchVoters();
+  }, [fetchVoters]);
+
   const shownProposals = proposals.filter(
     (proposal) => proposal.id !== winningProposal?.id
   );
+
+  const shownVoters = voters.map((voter) => ({
+    address: voter.address,
+    vote: proposals.find((proposal) => proposal.id === voter.votedProposalId),
+  }));
 
   return (
     <div className="flex flex-col items-center mt-12 space-y-8">
@@ -71,6 +98,7 @@ export default function VotesResult() {
           </ProposalsContainer>
         </>
       )}
+      <Voters voters={shownVoters} />
     </div>
   );
 }

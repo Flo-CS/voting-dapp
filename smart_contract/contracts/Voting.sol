@@ -2,6 +2,7 @@
 pragma solidity 0.8.21;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
 
 contract Voting is Ownable {
     constructor() Ownable(msg.sender) {}
@@ -10,6 +11,7 @@ contract Voting is Ownable {
         bool isRegistered;
         bool hasVoted;
         uint votedProposalId;
+        address addr;
     }
 
     struct Proposal {
@@ -35,7 +37,8 @@ contract Voting is Ownable {
     event Voted(address voter, uint proposalId);
     event CancelledVote(address voter, uint proposalId);
 
-    mapping(address => Voter) voters;
+    mapping(address => uint) addressToVoterId;
+    Voter[] voters;
     Proposal[] proposals;
     WorkflowStatus public currentStatus = WorkflowStatus.RegisteringVoters;
 
@@ -43,7 +46,7 @@ contract Voting is Ownable {
 
     modifier onlyRegistered() {
         require(
-            voters[msg.sender].isRegistered,
+            voters[addressToVoterId[msg.sender]].isRegistered,
             "You are not registered to vote"
         );
         _;
@@ -68,7 +71,19 @@ contract Voting is Ownable {
         onlyOwner
         onlyDuringWorkflowStatus(WorkflowStatus.RegisteringVoters)
     {
-        voters[_voterAddress] = Voter(true, false, 0);
+        uint newId = voters.length;
+        uint potentialCurrentVoterId = addressToVoterId[_voterAddress];
+        if (potentialCurrentVoterId < newId) {
+            // We need to do this check because when potentualCurrentVoterId is 0 (ie: voter never enregistred or voter is the first one), we need to verify that we speak of the same voter
+            if (_voterAddress == voters[potentialCurrentVoterId].addr) {
+                require(
+                    !voters[potentialCurrentVoterId].isRegistered,
+                    "Voter already registered"
+                );
+            }
+        }
+        voters.push(Voter(true, false, 0, _voterAddress));
+        addressToVoterId[_voterAddress] = newId;
 
         emit VoterRegistered(_voterAddress);
     }
@@ -76,7 +91,7 @@ contract Voting is Ownable {
     function goNextWorkflowStatus()
         public
         onlyOwner
-        notDuringWorkflowStatus(WorkflowStatus.VotesTallied)
+        notDuringWorkflowStatus(type(WorkflowStatus).max)
     {
         WorkflowStatus _newStatus = WorkflowStatus(uint(currentStatus) + 1);
         WorkflowStatus _previousStatus = currentStatus;
@@ -88,7 +103,7 @@ contract Voting is Ownable {
     function goNextAndSkipEndWorkflowStatus()
         public
         onlyOwner
-        notDuringWorkflowStatus(WorkflowStatus.VotesTallied)
+        notDuringWorkflowStatus(type(WorkflowStatus).max)
         notDuringWorkflowStatus(WorkflowStatus.RegisteringVoters)
         notDuringWorkflowStatus(WorkflowStatus.ProposalsRegistrationEnded)
         notDuringWorkflowStatus(WorkflowStatus.VotingSessionEnded)
@@ -114,12 +129,6 @@ contract Voting is Ownable {
         emit ProposalRegistered(proposals.length - 1);
     }
 
-    function getVoter(
-        address _voterAddress
-    ) public view returns (Voter memory) {
-        return voters[_voterAddress];
-    }
-
     function vote(
         uint _proposalId
     )
@@ -129,12 +138,12 @@ contract Voting is Ownable {
     {
         require(_proposalId < proposals.length, "Proposal id does not exist");
 
-        if (voters[msg.sender].hasVoted) {
-            removeVote(voters[msg.sender].votedProposalId);
+        if (voters[addressToVoterId[msg.sender]].hasVoted) {
+            removeVote(voters[addressToVoterId[msg.sender]].votedProposalId);
         }
 
-        voters[msg.sender].hasVoted = true;
-        voters[msg.sender].votedProposalId = _proposalId;
+        voters[addressToVoterId[msg.sender]].hasVoted = true;
+        voters[addressToVoterId[msg.sender]].votedProposalId = _proposalId;
         proposals[_proposalId].votesCount++;
 
         emit Voted(msg.sender, _proposalId);
@@ -147,14 +156,17 @@ contract Voting is Ownable {
         onlyRegistered
         onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
-        require(voters[msg.sender].hasVoted, "You have not voted yet");
         require(
-            voters[msg.sender].votedProposalId == _proposalId,
+            voters[addressToVoterId[msg.sender]].hasVoted,
+            "You have not voted yet"
+        );
+        require(
+            voters[addressToVoterId[msg.sender]].votedProposalId == _proposalId,
             "You have not voted for this proposal"
         );
 
-        voters[msg.sender].hasVoted = false;
-        voters[msg.sender].votedProposalId = 0;
+        voters[addressToVoterId[msg.sender]].hasVoted = false;
+        voters[addressToVoterId[msg.sender]].votedProposalId = 0;
         proposals[_proposalId].votesCount--;
 
         emit CancelledVote(msg.sender, _proposalId);
@@ -164,6 +176,16 @@ contract Voting is Ownable {
 
     function getProposals() public view returns (Proposal[] memory) {
         return proposals;
+    }
+
+    function getVoter(
+        address _voterAddress
+    ) public view returns (Voter memory) {
+        return voters[addressToVoterId[_voterAddress]];
+    }
+
+    function getVoters() public view returns (Voter[] memory) {
+        return voters;
     }
 
     function getWinningProposal()

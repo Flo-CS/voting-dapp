@@ -1,9 +1,17 @@
-import { ChangeEvent, useContext, useState } from "react";
+import {
+  ChangeEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import VotingContractContext from "../contexts/VotingContractContext";
 import { handleContractOperationError } from "../utils/contractErrors";
 import WarningMessage from "../components/WarningMessage";
+import { Voter } from "../types/Voter";
+import Voters from "../components/Voters";
 
 export default function RegisterVoters() {
   const { contract, isOwner } = useContext(VotingContractContext);
@@ -11,6 +19,22 @@ export default function RegisterVoters() {
   const [voterAddressInputValue, setVoterAddressInputValue] = useState("");
   const [isLoadingVoterRegistration, setIsLoadingVoterRegistration] =
     useState(false);
+  const [voters, setVoters] = useState<Voter[]>([]);
+
+  const fetchVoters = useCallback(async () => {
+    try {
+      const _voters = (await contract?.getVoters())?.map<Voter>((voter) => ({
+        hasVoted: voter.hasVoted,
+        isRegistered: voter.isRegistered,
+        votedProposalId: Number(voter.votedProposalId),
+        address: voter.addr,
+      }));
+
+      setVoters(_voters ?? []);
+    } catch (err) {
+      handleContractOperationError(err);
+    }
+  }, [contract]);
 
   const handleVoterAddressInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVoterAddressInputValue(e.target.value);
@@ -22,11 +46,20 @@ export default function RegisterVoters() {
       const transaction = await contract?.registerVoter(voterAddressInputValue);
       await transaction?.wait();
       setVoterAddressInputValue("");
+      await fetchVoters();
     } catch (err) {
       handleContractOperationError(err);
     }
     setIsLoadingVoterRegistration(false);
   };
+
+  useEffect(() => {
+    fetchVoters();
+  }, [fetchVoters]);
+
+  const shownVoters = voters.map((voter) => ({
+    address: voter.address,
+  }));
 
   return (
     <div className="flex flex-col items-center mt-12 space-y-8">
@@ -53,6 +86,8 @@ export default function RegisterVoters() {
           </Button>
         </div>
       )}
+
+      <Voters voters={shownVoters} />
     </div>
   );
 }
