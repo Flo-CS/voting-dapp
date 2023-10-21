@@ -9,9 +9,10 @@ export function rightTruncate(text: string, max: number) {
   return text.slice(0, max) + "...";
 }
 
-export function separateMultiline(text: string) {
+export function separateMultiline(text: string, separator = "\n") {
   return text
     .trim()
-    .split("\n")
+    .split(separator)
+    .map((text) => text.trim())
     .filter((text) => text !== "");
 }

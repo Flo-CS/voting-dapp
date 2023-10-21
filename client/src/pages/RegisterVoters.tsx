@@ -53,7 +53,9 @@ export default function RegisterVoters() {
     try {
       let transaction: ContractTransactionResponse | undefined;
       if (separatedVotersAddressesInputValue.length === 1) {
-        transaction = await contract?.registerVoter(votersAddressesInputValue);
+        transaction = await contract?.registerVoter(
+          separatedVotersAddressesInputValue[0]
+        );
       } else {
         transaction = await contract?.registerVoters(
           separatedVotersAddressesInputValue
@@ -83,6 +85,11 @@ export default function RegisterVoters() {
     fetchVoters();
   }, [fetchVoters]);
 
+  const buttonText =
+    separatedVotersAddressesInputValue.length > 1
+      ? "Register voters"
+      : "Register voter";
+
   return (
     <div className="flex flex-col items-center mt-12 space-y-8">
       <hr className="w-full" />
@@ -103,8 +110,9 @@ export default function RegisterVoters() {
             onClick={handleRegisterVoters}
             isLoading={isLoadingVoterRegistration}
             variant="primary"
+            disabled={separatedVotersAddressesInputValue.length === 0}
           >
-            Register voters
+            {buttonText}
           </Button>
         </div>
       )}

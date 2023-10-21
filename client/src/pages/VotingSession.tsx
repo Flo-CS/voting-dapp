@@ -75,6 +75,7 @@ export default function VotingSession() {
               onClick={handleProposalClick}
               showVotesCount={false}
               isVoted={votedProposalId === proposal.id}
+              showId={false}
             />
           );
         })}

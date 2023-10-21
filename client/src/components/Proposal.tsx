@@ -9,6 +9,7 @@ type ProposalProps = {
   onClick?: (id: number) => void;
   isVoted?: boolean;
   isWinning?: boolean;
+  showId?: boolean;
 };
 
 export default function Proposal({
@@ -19,6 +20,7 @@ export default function Proposal({
   onClick,
   isVoted,
   isWinning,
+  showId = true,
 }: ProposalProps) {
   function handleProposalClick() {
     if (onClick) onClick(id);
@@ -34,7 +36,7 @@ export default function Proposal({
     >
       <div className="flex mx-4 my-2">
         <h4 className="text-lg text-center">
-          <span className="font-semibold">{id}</span>. {description}
+          {showId && <span className="font-semibold">{id}.</span>} {description}
         </h4>
       </div>
       {showVotesCount && (

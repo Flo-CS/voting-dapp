@@ -14,7 +14,7 @@ export default function Voter({ voter, vote, showVote, LeftEl }: VoterProps) {
   return (
     <div className="flex flex-wrap items-center justify">
       <span
-        className={classnames("font-medium mr-2", {
+        className={classnames("mr-2", {
           "line-through": !voter.isRegistered,
         })}
       >
@@ -24,9 +24,7 @@ export default function Voter({ voter, vote, showVote, LeftEl }: VoterProps) {
         <span className="mr-2">
           {" "}
           has voted for{" "}
-          <span className="font-medium">
-            {rightTruncate(`${vote.id}. ${vote.description}`, 15)}
-          </span>
+          <span>{rightTruncate(`${vote.id}. ${vote.description}`, 15)}</span>
         </span>
       )}
       {showVote && !vote && <span className="mr-2">hasn't voted</span>}

@@ -60,11 +60,11 @@ export default function VotesResult() {
   );
 
   return (
-    <div className="flex flex-col items-center mt-12 space-y-8">
+    <div className="flex flex-col items-center mt-12 space-y-12">
       <hr className="w-full" />
       <h3 className="text-3xl font-semibold">Votes result</h3>
       {winningProposal && (
-        <>
+        <div className="flex flex-col items-center space-y-8">
           <p className="text-xl">This is the winning proposal !</p>
           <Proposal
             description={winningProposal.description}
@@ -73,11 +73,11 @@ export default function VotesResult() {
             showVotesCount={true}
             isWinning={true}
           />
-        </>
+        </div>
       )}
       {shownProposals.length !== 0 && (
-        <>
-          <p className="text-xl">And the votes for all others proposals</p>
+        <div className="flex flex-col items-center space-y-8">
+          <p className="text-xl ">And the votes for all others proposals</p>
           <ProposalsContainer>
             {shownProposals.map((proposal) => {
               return (
@@ -91,7 +91,7 @@ export default function VotesResult() {
               );
             })}
           </ProposalsContainer>
-        </>
+        </div>
       )}
       <Voters voters={voters} proposals={proposals} showActionButton={false} />
     </div>
