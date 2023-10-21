@@ -5,7 +5,7 @@ import "./index.css";
 import Web3Provider from "./providers/Web3Provider.tsx";
 import VotingContractProvider from "./providers/VotingContractProvider.tsx";
 import { createBrowserRouter } from "react-router-dom";
-import { RouterProvider } from "react-router";
+import { Navigate, RouterProvider } from "react-router";
 import RegisterVoters from "./pages/RegisterVoters.tsx";
 import ProposalsRegistration from "./pages/ProposalsRegistration.tsx";
 import ProposalsRegistrationEnd from "./pages/ProposalsRegistrationEnd.tsx";
@@ -18,7 +18,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: <div>404</div>,
+    errorElement: <Navigate to="/" />,
     children: [
       {
         path: "",
