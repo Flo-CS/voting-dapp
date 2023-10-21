@@ -16,7 +16,7 @@ import RegisteredRoute from "./routes/RegisteredRoute.tsx";
 
 const router = createBrowserRouter([
   {
-    path: "/voting-dapp",
+    path: "/",
     element: <App />,
     errorElement: <div>404</div>,
     children: [
