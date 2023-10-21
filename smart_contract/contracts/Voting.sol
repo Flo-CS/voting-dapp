@@ -7,6 +7,7 @@ import "hardhat/console.sol";
 contract Voting is Ownable {
     constructor() Ownable(msg.sender) {}
 
+    /* --------------------------------- Voters --------------------------------- */
     struct Voter {
         bool isRegistered;
         bool hasVoted;
@@ -14,11 +15,25 @@ contract Voting is Ownable {
         address addr;
     }
 
+    event VoterRegistered(address voterAddress);
+    event VoterUnregistered(address voterAddress);
+    event Voted(address voter, uint proposalId);
+    event CancelledVote(address voter, uint proposalId);
+
+    mapping(address => uint) addressToVoterId;
+    Voter[] voters;
+
+    /* -------------------------------- Proposals ------------------------------- */
     struct Proposal {
         string description;
         uint votesCount;
     }
 
+    event ProposalRegistered(uint proposalId);
+
+    Proposal[] proposals;
+
+    /* -------------------------------- Workflow -------------------------------- */
     enum WorkflowStatus {
         RegisteringVoters,
         ProposalsRegistrationStarted,
@@ -28,25 +43,20 @@ contract Voting is Ownable {
         VotesTallied
     }
 
-    event VoterRegistered(address voterAddress);
     event WorkflowStatusChange(
         WorkflowStatus previousStatus,
         WorkflowStatus newStatus
     );
-    event ProposalRegistered(uint proposalId);
-    event Voted(address voter, uint proposalId);
-    event CancelledVote(address voter, uint proposalId);
 
-    mapping(address => uint) addressToVoterId;
-    Voter[] voters;
-    Proposal[] proposals;
     WorkflowStatus public currentStatus = WorkflowStatus.RegisteringVoters;
 
-    /** MODIFIERS */
+    /* ========================================================================== */
+    /*                                  MODIFIERS                                 */
+    /* ========================================================================== */
 
-    modifier onlyRegistered() {
+    modifier onlyRegisteredVoter() {
         require(
-            voters[addressToVoterId[msg.sender]].isRegistered,
+            isRegisteredVoter(msg.sender),
             "You are not registered to vote"
         );
         _;
@@ -62,7 +72,9 @@ contract Voting is Ownable {
         _;
     }
 
-    /** OWNER ACTIONS */
+    /* ========================================================================== */
+    /*                                OWNER ACTIONS                               */
+    /* ========================================================================== */
 
     function registerVoter(
         address _voterAddress
@@ -71,21 +83,41 @@ contract Voting is Ownable {
         onlyOwner
         onlyDuringWorkflowStatus(WorkflowStatus.RegisteringVoters)
     {
-        uint newId = voters.length;
-        uint potentialCurrentVoterId = addressToVoterId[_voterAddress];
-        if (potentialCurrentVoterId < newId) {
-            // We need to do this check because when potentualCurrentVoterId is 0 (ie: voter never enregistred or voter is the first one), we need to verify that we speak of the same voter
-            if (_voterAddress == voters[potentialCurrentVoterId].addr) {
-                require(
-                    !voters[potentialCurrentVoterId].isRegistered,
-                    "Voter already registered"
-                );
-            }
+        if (isExistingVoter(_voterAddress)) {
+            voters[addressToVoterId[_voterAddress]].isRegistered = true;
+        } else {
+            uint newId = voters.length;
+            voters.push(Voter(true, false, 0, _voterAddress));
+            addressToVoterId[_voterAddress] = newId;
         }
-        voters.push(Voter(true, false, 0, _voterAddress));
-        addressToVoterId[_voterAddress] = newId;
 
         emit VoterRegistered(_voterAddress);
+    }
+
+    function registerVoters(
+        address[] memory _votersAddresses
+    )
+        public
+        onlyOwner
+        onlyDuringWorkflowStatus(WorkflowStatus.RegisteringVoters)
+    {
+        for (uint i = 0; i < _votersAddresses.length; i++) {
+            registerVoter(_votersAddresses[i]);
+        }
+    }
+
+    function unregisterVoter(
+        address _voterAddress
+    )
+        public
+        onlyOwner
+        onlyDuringWorkflowStatus(WorkflowStatus.RegisteringVoters)
+    {
+        require(isExistingVoter(_voterAddress), "Voter does not exist");
+
+        voters[addressToVoterId[_voterAddress]].isRegistered = false;
+
+        emit VoterUnregistered(_voterAddress);
     }
 
     function goNextWorkflowStatus()
@@ -115,13 +147,15 @@ contract Voting is Ownable {
         emit WorkflowStatusChange(_previousStatus, _newStatus);
     }
 
-    /** VOTERS ACTIONS */
+    /* ========================================================================== */
+    /*                               VOTERS ACTIONS                               */
+    /* ========================================================================== */
 
     function registerProposal(
         string memory _description
     )
         public
-        onlyRegistered
+        onlyRegisteredVoter
         onlyDuringWorkflowStatus(WorkflowStatus.ProposalsRegistrationStarted)
     {
         proposals.push(Proposal(_description, 0));
@@ -129,11 +163,23 @@ contract Voting is Ownable {
         emit ProposalRegistered(proposals.length - 1);
     }
 
+    function registerProposals(
+        string[] memory _descriptions
+    )
+        public
+        onlyRegisteredVoter
+        onlyDuringWorkflowStatus(WorkflowStatus.ProposalsRegistrationStarted)
+    {
+        for (uint i = 0; i < _descriptions.length; i++) {
+            registerProposal(_descriptions[i]);
+        }
+    }
+
     function vote(
         uint _proposalId
     )
         public
-        onlyRegistered
+        onlyRegisteredVoter
         onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
         require(_proposalId < proposals.length, "Proposal id does not exist");
@@ -153,7 +199,7 @@ contract Voting is Ownable {
         uint _proposalId
     )
         public
-        onlyRegistered
+        onlyRegisteredVoter
         onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
         require(
@@ -172,20 +218,37 @@ contract Voting is Ownable {
         emit CancelledVote(msg.sender, _proposalId);
     }
 
-    /** ALL ACTIONS */
+    /* ========================================================================== */
+    /*                              EVERYONE ACTIONS                              */
+    /* ========================================================================== */
 
-    function getProposals() public view returns (Proposal[] memory) {
-        return proposals;
+    function isRegisteredVoter(
+        address _voterAddress
+    ) public view returns (bool) {
+        uint voterId = addressToVoterId[_voterAddress];
+        return isExistingVoter(_voterAddress) && voters[voterId].isRegistered;
+    }
+
+    function isExistingVoter(address _voterAddress) public view returns (bool) {
+        uint voterId = addressToVoterId[_voterAddress];
+        return voterId < voters.length && voters[voterId].addr == _voterAddress;
     }
 
     function getVoter(
         address _voterAddress
     ) public view returns (Voter memory) {
+        if (!isExistingVoter(_voterAddress)) {
+            return Voter(false, false, 0, _voterAddress);
+        }
         return voters[addressToVoterId[_voterAddress]];
     }
 
     function getVoters() public view returns (Voter[] memory) {
         return voters;
+    }
+
+    function getProposals() public view returns (Proposal[] memory) {
+        return proposals;
     }
 
     function getWinningProposal()
