@@ -1,3 +1,4 @@
+import { ContractTransactionResponse } from "ethers";
 import {
   ChangeEvent,
   useCallback,
@@ -6,20 +7,25 @@ import {
   useState,
 } from "react";
 import Button from "../components/Button";
-import Input from "../components/Input";
-import VotingContractContext from "../contexts/VotingContractContext";
-import { handleContractOperationError } from "../utils/contractErrors";
-import WarningMessage from "../components/WarningMessage";
-import { Voter } from "../types/Voter";
+import MultilineInput from "../components/MultilineInput";
 import Voters from "../components/VotersContainer";
+import WarningMessage from "../components/WarningMessage";
+import VotingContractContext from "../contexts/VotingContractContext";
+import { Voter } from "../types/Voter";
+import { handleContractOperationError } from "../utils/contractErrors";
+import { separateMultiline } from "../utils/text";
 
 export default function RegisterVoters() {
   const { contract, isOwner } = useContext(VotingContractContext);
 
-  const [voterAddressInputValue, setVoterAddressInputValue] = useState("");
+  const [votersAddressesInputValue, setVoterAddressesInputValue] = useState("");
   const [isLoadingVoterRegistration, setIsLoadingVoterRegistration] =
     useState(false);
   const [voters, setVoters] = useState<Voter[]>([]);
+
+  const separatedVotersAddressesInputValue = separateMultiline(
+    votersAddressesInputValue
+  );
 
   const fetchVoters = useCallback(async () => {
     try {
@@ -36,16 +42,26 @@ export default function RegisterVoters() {
     }
   }, [contract]);
 
-  const handleVoterAddressInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setVoterAddressInputValue(e.target.value);
+  const handleVoterAddressInputChange = (
+    e: ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setVoterAddressesInputValue(e.target.value);
   };
 
-  const handleRegisterVoter = async () => {
+  const handleRegisterVoters = async () => {
     setIsLoadingVoterRegistration(true);
     try {
-      const transaction = await contract?.registerVoter(voterAddressInputValue);
+      let transaction: ContractTransactionResponse | undefined;
+      if (separatedVotersAddressesInputValue.length === 1) {
+        transaction = await contract?.registerVoter(votersAddressesInputValue);
+      } else {
+        transaction = await contract?.registerVoters(
+          separatedVotersAddressesInputValue
+        );
+      }
       await transaction?.wait();
-      setVoterAddressInputValue("");
+
+      setVoterAddressesInputValue("");
       await fetchVoters();
     } catch (err) {
       handleContractOperationError(err);
@@ -78,17 +94,17 @@ export default function RegisterVoters() {
 
       {isOwner === "yes" && (
         <div className="flex flex-col space-y-4 w-full md:w-[28rem]">
-          <Input
-            placeholder="Voter address"
-            value={voterAddressInputValue}
+          <MultilineInput
+            placeholder="Voters addresses (one per line)"
+            value={votersAddressesInputValue}
             onChange={handleVoterAddressInputChange}
           />
           <Button
-            onClick={handleRegisterVoter}
+            onClick={handleRegisterVoters}
             isLoading={isLoadingVoterRegistration}
             variant="primary"
           >
-            Register voter
+            Register voters
           </Button>
         </div>
       )}

@@ -12,16 +12,16 @@ type VoterProps = {
 
 export default function Voter({ voter, vote, showVote, LeftEl }: VoterProps) {
   return (
-    <div className="flex flex-wrap items-center justify-center">
+    <div className="flex flex-wrap items-center justify">
       <span
-        className={classnames("font-medium", {
+        className={classnames("font-medium mr-2", {
           "line-through": !voter.isRegistered,
         })}
       >
         {voter.address}
       </span>
       {showVote && vote && (
-        <span className="ml-2">
+        <span className="mr-2">
           {" "}
           has voted for{" "}
           <span className="font-medium">
@@ -29,8 +29,8 @@ export default function Voter({ voter, vote, showVote, LeftEl }: VoterProps) {
           </span>
         </span>
       )}
-      {showVote && !vote && <span className="ml-2">hasn't voted</span>}
-      {LeftEl && <span className="ml-3">{LeftEl}</span>}
+      {showVote && !vote && <span className="mr-2">hasn't voted</span>}
+      {LeftEl && <span className="ml-auto">{LeftEl}</span>}
     </div>
   );
 }

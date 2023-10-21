@@ -8,3 +8,10 @@ export function rightTruncate(text: string, max: number) {
   if (text.length <= max) return text;
   return text.slice(0, max) + "...";
 }
+
+export function separateMultiline(text: string) {
+  return text
+    .trim()
+    .split("\n")
+    .filter((text) => text !== "");
+}
