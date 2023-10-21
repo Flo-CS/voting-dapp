@@ -1,13 +1,17 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import ProposalsContainer from "../components/ProposalsContainer";
 import VotingContractContext from "../contexts/VotingContractContext";
 import { Proposal as ProposalData } from "../types/Proposal";
 import Proposal from "../components/Proposal";
+import { Voter } from "../types/Voter";
+import { handleContractOperationError } from "../utils/contractErrors";
+import Voters from "../components/VotersContainer";
 
 export default function VotesResult() {
   const { contract } = useContext(VotingContractContext);
   const [proposals, setProposals] = useState<ProposalData[]>([]);
   const [winningProposal, setWinningProposal] = useState<ProposalData>();
+  const [voters, setVoters] = useState<Voter[]>([]);
 
   useEffect(() => {
     if (!contract) return;
@@ -33,16 +37,34 @@ export default function VotesResult() {
     fetchProposals();
   }, [contract]);
 
+  const fetchVoters = useCallback(async () => {
+    try {
+      const _voters = (await contract?.getVoters())?.map<Voter>((voter) => ({
+        hasVoted: voter.hasVoted,
+        isRegistered: voter.isRegistered,
+        votedProposalId: Number(voter.votedProposalId),
+        address: voter.addr,
+      }));
+
+      setVoters(_voters ?? []);
+    } catch (err) {
+      handleContractOperationError(err);
+    }
+  }, [contract]);
+  useEffect(() => {
+    fetchVoters();
+  }, [fetchVoters]);
+
   const shownProposals = proposals.filter(
     (proposal) => proposal.id !== winningProposal?.id
   );
 
   return (
-    <div className="flex flex-col items-center mt-12 space-y-8">
+    <div className="flex flex-col items-center mt-12 space-y-12">
       <hr className="w-full" />
       <h3 className="text-3xl font-semibold">Votes result</h3>
       {winningProposal && (
-        <>
+        <div className="flex flex-col items-center space-y-8">
           <p className="text-xl">This is the winning proposal !</p>
           <Proposal
             description={winningProposal.description}
@@ -51,11 +73,11 @@ export default function VotesResult() {
             showVotesCount={true}
             isWinning={true}
           />
-        </>
+        </div>
       )}
       {shownProposals.length !== 0 && (
-        <>
-          <p className="text-xl">And the votes for all others proposals</p>
+        <div className="flex flex-col items-center space-y-8">
+          <p className="text-xl ">And the votes for all others proposals</p>
           <ProposalsContainer>
             {shownProposals.map((proposal) => {
               return (
@@ -69,8 +91,9 @@ export default function VotesResult() {
               );
             })}
           </ProposalsContainer>
-        </>
+        </div>
       )}
+      <Voters voters={voters} proposals={proposals} showActionButton={false} />
     </div>
   );
 }

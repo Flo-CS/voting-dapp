@@ -25,6 +25,8 @@ export default function VotingContractProvider({
       const contractAddress = await contract.getAddress();
       setContractAddress(contractAddress);
     } catch (err) {
+      console.log("coucou");
+
       handleContractOperationError(err);
     }
   }, [signer]);

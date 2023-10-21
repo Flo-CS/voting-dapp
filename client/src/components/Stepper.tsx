@@ -27,7 +27,7 @@ function Item({ completed, children, index, isFirst }: ItemProps) {
           className={classNames(
             "flex-auto border-l-2 lg:border-t-2 h-4 lg:h-0 mr-32 lg:mr-0",
             {
-              "border-blue-300": completed,
+              "border-green-300": completed,
               "border-gray-300": !completed,
             }
           )}
@@ -38,7 +38,7 @@ function Item({ completed, children, index, isFirst }: ItemProps) {
           className={classNames(
             "flex items-center justify-center w-10 h-10 py-3 font-semibold text-white rounded-full ",
             {
-              "bg-blue-500": completed,
+              "bg-green-500": completed,
               "bg-black": !completed,
             }
           )}

@@ -12,6 +12,7 @@ import ProposalsRegistrationEnd from "./pages/ProposalsRegistrationEnd.tsx";
 import VotingSession from "./pages/VotingSession.tsx";
 import VotingSessionEnd from "./pages/VotingSessionEnd.tsx";
 import VotesResult from "./pages/VotesResult.tsx";
+import RegisteredRoute from "./routes/RegisteredRoute.tsx";
 
 const router = createBrowserRouter([
   {
@@ -20,25 +21,32 @@ const router = createBrowserRouter([
     errorElement: <div>404</div>,
     children: [
       {
-        path: "0",
-        element: <RegisterVoters />,
+        path: "",
+        element: <RegisteredRoute />,
+        children: [
+          {
+            path: "0",
+            element: <RegisterVoters />,
+          },
+          {
+            path: "1",
+            element: <ProposalsRegistration />,
+          },
+          {
+            path: "2",
+            element: <ProposalsRegistrationEnd />,
+          },
+          {
+            path: "3",
+            element: <VotingSession />,
+          },
+          {
+            path: "4",
+            element: <VotingSessionEnd />,
+          },
+        ],
       },
-      {
-        path: "1",
-        element: <ProposalsRegistration />,
-      },
-      {
-        path: "2",
-        element: <ProposalsRegistrationEnd />,
-      },
-      {
-        path: "3",
-        element: <VotingSession />,
-      },
-      {
-        path: "4",
-        element: <VotingSessionEnd />,
-      },
+
       {
         path: "5",
         element: <VotesResult />,

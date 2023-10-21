@@ -23,7 +23,7 @@ type RightIconButtonProps = {
 function RightIconButton({ Icon, ...props }: RightIconButtonProps) {
   return (
     <button
-      className="px-4 py-2 font-semibold text-white bg-blue-500 rounded-r-sm hover:bg-blue-600 transition duration-200 border-blue-500 border"
+      className="px-4 py-2 font-semibold text-white bg-green-500 rounded-r-sm hover:bg-green-600 transition duration-200 border-green-500 border"
       {...props}
     >
       {Icon}
