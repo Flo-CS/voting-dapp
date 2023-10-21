@@ -80,7 +80,7 @@ export default function VotingInfos() {
   }, [contract]);
 
   useEffect(() => {
-    navigate(`${activeStep}`);
+    navigate(`${activeStep}`, { replace: true });
   }, [activeStep, navigate]);
 
   useEffect(() => {

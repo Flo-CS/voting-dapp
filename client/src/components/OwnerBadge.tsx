@@ -1,13 +1,14 @@
 import { MdPersonOff, MdPerson, MdQuestionMark } from "react-icons/md";
+import { IsOwner } from "../types/Owner";
 
 type OwnerBadgeProps = {
-  isOwner: "yes" | "no" | "unknown";
+  isOwner: IsOwner;
 };
 
 export default function OwnerBadge({ isOwner }: OwnerBadgeProps) {
   return (
     <>
-      <div className="border-gray-700 border border-solid  flex-shrink-0 rounded px-4 py-2 text-xl font-semibold flex items-center">
+      <div className="flex items-center flex-shrink-0 px-4 py-2 text-xl font-semibold border border-gray-700 border-solid rounded">
         {isOwner === "yes" && (
           <>
             <MdPerson />

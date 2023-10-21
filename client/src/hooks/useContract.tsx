@@ -4,13 +4,14 @@ import { Voting } from "../../../smart_contract/typechain-types";
 import { handleContractOperationError } from "../utils/contractErrors";
 import { getVotingContract } from "../utils/votingContract";
 import { Signer } from "ethers";
+import { IsOwner } from "../types/Owner";
 
 export default function useVotingContract(
   contractAddress?: string,
   signer?: Signer
 ) {
   const [contract, setContract] = useState<Voting>();
-  const [isOwner, setIsOwner] = useState<"yes" | "no" | "unknown">("unknown");
+  const [isOwner, setIsOwner] = useState<IsOwner>("unknown");
 
   const testIsOwner = useCallback(async () => {
     try {

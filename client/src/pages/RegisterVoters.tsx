@@ -66,8 +66,8 @@ export default function RegisterVoters() {
       <hr className="w-full" />
       <h3 className="text-3xl font-semibold">Register voters</h3>
 
-      {["no", "unknown"].includes(isOwner) && (
-        <WarningMessage message="You are not the owner of the contract, perhaps you will be registered for voting.." />
+      {(isOwner === "no" || isOwner === "unknown") && (
+        <WarningMessage message="You are registered, just wait for the next step..." />
       )}
 
       {isOwner === "yes" && (
