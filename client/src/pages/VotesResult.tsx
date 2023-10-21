@@ -5,7 +5,7 @@ import { Proposal as ProposalData } from "../types/Proposal";
 import Proposal from "../components/Proposal";
 import { Voter } from "../types/Voter";
 import { handleContractOperationError } from "../utils/contractErrors";
-import Voters from "../components/Voters";
+import Voters from "../components/VotersContainer";
 
 export default function VotesResult() {
   const { contract } = useContext(VotingContractContext);
@@ -59,11 +59,6 @@ export default function VotesResult() {
     (proposal) => proposal.id !== winningProposal?.id
   );
 
-  const shownVoters = voters.map((voter) => ({
-    address: voter.address,
-    vote: proposals.find((proposal) => proposal.id === voter.votedProposalId),
-  }));
-
   return (
     <div className="flex flex-col items-center mt-12 space-y-8">
       <hr className="w-full" />
@@ -98,7 +93,7 @@ export default function VotesResult() {
           </ProposalsContainer>
         </>
       )}
-      <Voters voters={shownVoters} />
+      <Voters voters={voters} proposals={proposals} showActionButton={false} />
     </div>
   );
 }

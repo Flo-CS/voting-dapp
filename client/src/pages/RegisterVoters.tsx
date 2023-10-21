@@ -11,7 +11,7 @@ import VotingContractContext from "../contexts/VotingContractContext";
 import { handleContractOperationError } from "../utils/contractErrors";
 import WarningMessage from "../components/WarningMessage";
 import { Voter } from "../types/Voter";
-import Voters from "../components/Voters";
+import Voters from "../components/VotersContainer";
 
 export default function RegisterVoters() {
   const { contract, isOwner } = useContext(VotingContractContext);
@@ -53,13 +53,19 @@ export default function RegisterVoters() {
     setIsLoadingVoterRegistration(false);
   };
 
+  const handleUnregisterVoter = async (voter: Voter) => {
+    try {
+      const transaction = await contract?.unregisterVoter(voter.address);
+      await transaction?.wait();
+      await fetchVoters();
+    } catch (err) {
+      handleContractOperationError(err);
+    }
+  };
+
   useEffect(() => {
     fetchVoters();
   }, [fetchVoters]);
-
-  const shownVoters = voters.map((voter) => ({
-    address: voter.address,
-  }));
 
   return (
     <div className="flex flex-col items-center mt-12 space-y-8">
@@ -87,7 +93,11 @@ export default function RegisterVoters() {
         </div>
       )}
 
-      <Voters voters={shownVoters} />
+      <Voters
+        voters={voters}
+        showActionButton={isOwner === "yes"}
+        onUnregisterVoter={handleUnregisterVoter}
+      />
     </div>
   );
 }
