@@ -11,7 +11,7 @@ contract Voting is Ownable {
     struct Voter {
         bool isRegistered;
         bool hasVoted;
-        uint votedProposalId;
+        uint[] votedProposalIds;
         address addr;
     }
 
@@ -22,6 +22,8 @@ contract Voting is Ownable {
 
     mapping(address => uint) addressToVoterId;
     Voter[] voters;
+
+    uint public numberOfAdditionalVotesAllowed = 0;
 
     /* -------------------------------- Proposals ------------------------------- */
     struct Proposal {
@@ -49,6 +51,10 @@ contract Voting is Ownable {
     );
 
     WorkflowStatus public currentStatus = WorkflowStatus.RegisteringVoters;
+
+    /* ------------------------------ Vote subject ------------------------------ */
+
+    string public voteSubject;
 
     /* ========================================================================== */
     /*                                  MODIFIERS                                 */
@@ -87,7 +93,10 @@ contract Voting is Ownable {
             voters[addressToVoterId[_voterAddress]].isRegistered = true;
         } else {
             uint newId = voters.length;
-            voters.push(Voter(true, false, 0, _voterAddress));
+
+            uint[] memory votedProposalIds;
+            voters.push(Voter(true, false, votedProposalIds, _voterAddress));
+
             addressToVoterId[_voterAddress] = newId;
         }
 
@@ -147,6 +156,41 @@ contract Voting is Ownable {
         emit WorkflowStatusChange(_previousStatus, _newStatus);
     }
 
+    function restart() public onlyOwner {
+        WorkflowStatus _newStatus = WorkflowStatus.RegisteringVoters;
+        WorkflowStatus _previousStatus = currentStatus;
+        currentStatus = _newStatus;
+
+        delete proposals;
+
+        for (uint i = 0; i < voters.length; i++) {
+            voters[i].hasVoted = false;
+            delete voters[i].votedProposalIds;
+        }
+
+        emit WorkflowStatusChange(_previousStatus, _newStatus);
+    }
+
+    function setVoteSubject(
+        string memory _voteSubject
+    )
+        public
+        onlyOwner
+        onlyDuringWorkflowStatus(WorkflowStatus.RegisteringVoters)
+    {
+        voteSubject = _voteSubject;
+    }
+
+    function setNumberOfAdditionalVotesAllowed(
+        uint _numberOfAdditionalVotesAllowed
+    )
+        public
+        onlyOwner
+        onlyDuringWorkflowStatus(WorkflowStatus.RegisteringVoters)
+    {
+        numberOfAdditionalVotesAllowed = _numberOfAdditionalVotesAllowed;
+    }
+
     /* ========================================================================== */
     /*                               VOTERS ACTIONS                               */
     /* ========================================================================== */
@@ -184,12 +228,19 @@ contract Voting is Ownable {
     {
         require(_proposalId < proposals.length, "Proposal id does not exist");
 
-        if (voters[addressToVoterId[msg.sender]].hasVoted) {
-            removeVote(voters[addressToVoterId[msg.sender]].votedProposalId);
-        }
+        Voter storage voter = voters[addressToVoterId[msg.sender]];
 
-        voters[addressToVoterId[msg.sender]].hasVoted = true;
-        voters[addressToVoterId[msg.sender]].votedProposalId = _proposalId;
+        require(
+            voter.votedProposalIds.length < numberOfAdditionalVotesAllowed + 1,
+            "You have already used all your additional votes"
+        );
+        require(
+            !hasVotedFor(msg.sender, _proposalId),
+            "You have already voted for this proposal"
+        );
+
+        voter.votedProposalIds.push(_proposalId);
+        voter.hasVoted = true;
         proposals[_proposalId].votesCount++;
 
         emit Voted(msg.sender, _proposalId);
@@ -202,20 +253,65 @@ contract Voting is Ownable {
         onlyRegisteredVoter
         onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
+        Voter storage voter = voters[addressToVoterId[msg.sender]];
+
+        require(voter.hasVoted, "You have not voted yet");
         require(
-            voters[addressToVoterId[msg.sender]].hasVoted,
-            "You have not voted yet"
-        );
-        require(
-            voters[addressToVoterId[msg.sender]].votedProposalId == _proposalId,
+            hasVotedFor(msg.sender, _proposalId),
             "You have not voted for this proposal"
         );
 
-        voters[addressToVoterId[msg.sender]].hasVoted = false;
-        voters[addressToVoterId[msg.sender]].votedProposalId = 0;
+        removeVotedProposalId(msg.sender, _proposalId);
+        if (voter.votedProposalIds.length == 0) {
+            voter.hasVoted = false;
+        }
         proposals[_proposalId].votesCount--;
 
         emit CancelledVote(msg.sender, _proposalId);
+    }
+
+    function removeVotedProposalId(
+        address _voterAddress,
+        uint _proposalId
+    )
+        private
+        onlyRegisteredVoter
+        onlyDuringWorkflowStatus(WorkflowStatus.VotingSessionStarted)
+    {
+        Voter storage voter = voters[addressToVoterId[_voterAddress]];
+
+        uint proposalIndex = 0;
+        for (uint i = 0; i < voter.votedProposalIds.length; i++) {
+            if (voter.votedProposalIds[i] == _proposalId) {
+                proposalIndex = i;
+                break;
+            }
+        }
+
+        require(
+            proposalIndex < voter.votedProposalIds.length,
+            "Proposal id does not exist"
+        );
+
+        voter.votedProposalIds[proposalIndex] = voter.votedProposalIds[
+            voter.votedProposalIds.length - 1
+        ];
+        voter.votedProposalIds.pop();
+    }
+
+    function hasVotedFor(
+        address _voterAddress,
+        uint _proposalId
+    ) private view onlyRegisteredVoter returns (bool) {
+        Voter memory voter = voters[addressToVoterId[_voterAddress]];
+
+        for (uint i = 0; i < voter.votedProposalIds.length; i++) {
+            if (voter.votedProposalIds[i] == _proposalId) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /* ========================================================================== */
@@ -238,7 +334,9 @@ contract Voting is Ownable {
         address _voterAddress
     ) public view returns (Voter memory) {
         if (!isExistingVoter(_voterAddress)) {
-            return Voter(false, false, 0, _voterAddress);
+            uint[] memory additionalVotedProposalIds;
+            return
+                Voter(false, false, additionalVotedProposalIds, _voterAddress);
         }
         return voters[addressToVoterId[_voterAddress]];
     }
@@ -257,12 +355,14 @@ contract Voting is Ownable {
         onlyDuringWorkflowStatus(WorkflowStatus.VotesTallied)
         returns (Proposal memory, uint)
     {
+        require(proposals.length > 0, "No proposals");
+
         uint winningProposalId = 0;
-        uint winningvotesCount = 0;
+        uint winningVotesCount = 0;
         for (uint i = 0; i < proposals.length; i++) {
-            if (proposals[i].votesCount > winningvotesCount) {
+            if (proposals[i].votesCount > winningVotesCount) {
                 winningProposalId = i;
-                winningvotesCount = proposals[i].votesCount;
+                winningVotesCount = proposals[i].votesCount;
             }
         }
 

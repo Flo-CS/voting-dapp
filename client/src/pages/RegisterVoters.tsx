@@ -32,7 +32,7 @@ export default function RegisterVoters() {
       const _voters = (await contract?.getVoters())?.map<Voter>((voter) => ({
         hasVoted: voter.hasVoted,
         isRegistered: voter.isRegistered,
-        votedProposalId: Number(voter.votedProposalId),
+        votedProposalIds: voter.votedProposalIds.map((id) => Number(id)),
         address: voter.addr,
       }));
 

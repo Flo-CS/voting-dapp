@@ -3,6 +3,7 @@ import VotingContractContext from "../contexts/VotingContractContext";
 import Web3Context from "../contexts/Web3Context";
 import ProposalsContainer from "../components/ProposalsContainer";
 import { Proposal as ProposalData } from "../types/Proposal";
+import { Voter as VoterData } from "../types/Voter";
 import Proposal from "../components/Proposal";
 import { handleContractOperationError } from "../utils/contractErrors";
 
@@ -11,16 +12,26 @@ export default function VotingSession() {
   const { contract } = useContext(VotingContractContext);
 
   const [proposals, setProposals] = useState<ProposalData[]>([]);
-  const [votedProposalId, setVotedProposalId] = useState<number | null>(null);
+  const [voter, setVoter] = useState<VoterData | undefined>();
+  const [numberOfAdditionalVotesAllowed, setNumberOfAdditionalVotesAllowed] =
+    useState(0);
 
   const fetchVoterVote = useCallback(async () => {
     if (!contract || !signerAddress) return;
-    const hasVoted = (await contract.getVoter(signerAddress)).hasVoted;
-    const voterVote = (await contract.getVoter(signerAddress)).votedProposalId;
-    if (hasVoted) {
-      setVotedProposalId(Number(voterVote));
+    const _numberOfAdditionalVotesAllowed =
+      await contract.numberOfAdditionalVotesAllowed();
+    setNumberOfAdditionalVotesAllowed(Number(_numberOfAdditionalVotesAllowed));
+
+    const _voter = await contract.getVoter(signerAddress);
+    if (_voter.hasVoted) {
+      setVoter({
+        hasVoted: _voter.hasVoted,
+        isRegistered: _voter.isRegistered,
+        address: _voter.addr,
+        votedProposalIds: _voter.votedProposalIds.map((id) => Number(id)),
+      });
     } else {
-      setVotedProposalId(null);
+      setVoter(undefined);
     }
   }, [contract, signerAddress]);
 
@@ -47,8 +58,8 @@ export default function VotingSession() {
   async function handleProposalClick(id: number) {
     try {
       let transaction;
-      if (votedProposalId === id) {
-        transaction = await contract?.removeVote(votedProposalId);
+      if (voter?.votedProposalIds.includes(id)) {
+        transaction = await contract?.removeVote(id);
       } else {
         transaction = await contract?.vote(id);
       }
@@ -59,11 +70,22 @@ export default function VotingSession() {
     fetchVoterVote();
   }
 
+  const numberOfVotesDone = voter?.votedProposalIds.length ?? 0;
+  const numberOfVotesAllowed = numberOfAdditionalVotesAllowed + 1;
+
   return (
     <div className="flex flex-col items-center mt-12 space-y-8">
       <hr className="w-full" />
       <h3 className="text-3xl font-semibold">Voting session</h3>
-      <p className="text-lg">Select a proposal and vote for it</p>
+      <div>
+        <p className="text-lg text-center">Select a proposal and vote for it</p>
+        <p className="text-lg text-center">
+          You have completed{" "}
+          <span className="font-semibold">
+            {numberOfVotesDone}/{numberOfVotesAllowed} votes
+          </span>
+        </p>
+      </div>
       <ProposalsContainer>
         {proposals.map((proposal) => {
           return (
@@ -74,7 +96,7 @@ export default function VotingSession() {
               votesCount={proposal.votesCount}
               onClick={handleProposalClick}
               showVotesCount={false}
-              isVoted={votedProposalId === proposal.id}
+              isVoted={voter?.votedProposalIds.includes(proposal.id)}
               showId={false}
             />
           );
