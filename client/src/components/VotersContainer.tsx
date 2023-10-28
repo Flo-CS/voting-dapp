@@ -1,4 +1,4 @@
-import { MdExitToApp } from "react-icons/md";
+import { MdClose } from "react-icons/md";
 import IconButton from "./IconButton";
 import Voter from "./Voter";
 import { Proposal } from "../types/Proposal";
@@ -22,10 +22,7 @@ export default function Voters({
     if (!voter.isRegistered) return null;
 
     return (
-      <IconButton
-        Icon={MdExitToApp}
-        onClick={() => onUnregisterVoter?.(voter)}
-      />
+      <IconButton Icon={MdClose} onClick={() => onUnregisterVoter?.(voter)} />
     );
   };
 
@@ -34,18 +31,17 @@ export default function Voters({
       <h3 className="mb-3 text-2xl font-medium">Voters</h3>
       <ul>
         {voters.map((voter) => {
-          const vote = proposals?.find(
-            (proposal) =>
-              voter.hasVoted && proposal.id === voter.votedProposalId
+          const votes = proposals?.filter((proposal) =>
+            voter.votedProposalIds.includes(proposal.id)
           );
 
-          const showVote = proposals && vote && voter.isRegistered;
+          const showVote = proposals && voter.hasVoted && voter.isRegistered;
 
           return (
             <li key={voter.address} className="mb-2">
               <Voter
                 voter={voter}
-                vote={vote}
+                votes={votes}
                 showVote={showVote}
                 LeftEl={getActionButton(voter)}
               />

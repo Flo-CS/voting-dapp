@@ -15,6 +15,7 @@ export default function VotesResult() {
 
   useEffect(() => {
     if (!contract) return;
+
     const fetchProposals = async () => {
       const _proposals = await contract.getProposals();
       const [_winningProposal, winningProposalId] =
@@ -42,7 +43,7 @@ export default function VotesResult() {
       const _voters = (await contract?.getVoters())?.map<Voter>((voter) => ({
         hasVoted: voter.hasVoted,
         isRegistered: voter.isRegistered,
-        votedProposalId: Number(voter.votedProposalId),
+        votedProposalIds: voter.votedProposalIds.map((id) => Number(id)),
         address: voter.addr,
       }));
 
@@ -51,6 +52,7 @@ export default function VotesResult() {
       handleContractOperationError(err);
     }
   }, [contract]);
+
   useEffect(() => {
     fetchVoters();
   }, [fetchVoters]);

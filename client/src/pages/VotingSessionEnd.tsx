@@ -5,20 +5,28 @@ import VotingContractContext from "../contexts/VotingContractContext";
 import { Proposal as ProposalData } from "../types/Proposal";
 import Proposal from "../components/Proposal";
 import WarningMessage from "../components/WarningMessage";
+import { Voter as VoterData } from "../types/Voter";
 
 export default function VotingSessionEnd() {
   const { signerAddress } = useContext(Web3Context);
   const { contract } = useContext(VotingContractContext);
 
   const [proposals, setProposals] = useState<ProposalData[]>([]);
-  const [votedProposalId, setVotedProposalId] = useState<number | null>(null);
+  const [voter, setVoter] = useState<VoterData>();
 
   const fetchVoterVote = useCallback(async () => {
     if (!contract || !signerAddress) return;
-    const hasVoted = (await contract.getVoter(signerAddress)).hasVoted;
-    const voterVote = (await contract.getVoter(signerAddress)).votedProposalId;
-    if (hasVoted) {
-      setVotedProposalId(Number(voterVote));
+
+    const _voter = await contract.getVoter(signerAddress);
+    if (_voter.hasVoted) {
+      setVoter({
+        hasVoted: _voter.hasVoted,
+        isRegistered: _voter.isRegistered,
+        address: _voter.addr,
+        votedProposalIds: _voter.votedProposalIds.map((id) => Number(id)),
+      });
+    } else {
+      setVoter(undefined);
     }
   }, [contract, signerAddress]);
 
@@ -56,7 +64,7 @@ export default function VotingSessionEnd() {
               id={proposal.id}
               votesCount={proposal.votesCount}
               showVotesCount={false}
-              isVoted={votedProposalId === proposal.id}
+              isVoted={voter?.votedProposalIds.includes(proposal.id)}
             />
           );
         })}

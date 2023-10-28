@@ -1,18 +1,17 @@
 import classnames from "classnames";
 import { Proposal } from "../types/Proposal";
 import { Voter as VoterData } from "../types/Voter";
-import { rightTruncate } from "../utils/text";
 
 type VoterProps = {
   voter: VoterData;
-  vote?: Proposal;
+  votes?: Proposal[];
   showVote?: boolean;
   LeftEl?: React.ReactNode;
 };
 
-export default function Voter({ voter, vote, showVote, LeftEl }: VoterProps) {
+export default function Voter({ voter, votes, showVote, LeftEl }: VoterProps) {
   return (
-    <div className="flex flex-wrap items-center justify">
+    <div className="flex flex-wrap items-center justify-center">
       <span
         className={classnames("mr-2", {
           "line-through": !voter.isRegistered,
@@ -20,14 +19,25 @@ export default function Voter({ voter, vote, showVote, LeftEl }: VoterProps) {
       >
         {voter.address}
       </span>
-      {showVote && vote && (
-        <span className="mr-2">
+      {showVote && (
+        <span className="mr-2 text-center">
           {" "}
-          has voted for{" "}
-          <span>{rightTruncate(`${vote.id}. ${vote.description}`, 15)}</span>
+          has voted for proposals{" "}
+          {votes?.map((vote, idx) => {
+            console.log(vote.id);
+
+            return (
+              <>
+                {idx > 0 && ", "}
+                <span key={vote.id} className="font-semibold">
+                  {vote.id}
+                </span>
+              </>
+            );
+          })}
         </span>
       )}
-      {showVote && !vote && <span className="mr-2">hasn't voted</span>}
+      {showVote && !votes && <span className="mr-2">hasn't voted</span>}
       {LeftEl && <span className="ml-auto">{LeftEl}</span>}
     </div>
   );

@@ -34,8 +34,8 @@ export default function Proposal({
       })}
       onClick={handleProposalClick}
     >
-      <div className="flex mx-4 my-2">
-        <h4 className="text-lg text-center">
+      <div className="flex w-full mx-4 my-2">
+        <h4 className="w-full text-lg text-center">
           {showId && <span className="font-semibold">{id}.</span>} {description}
         </h4>
       </div>
